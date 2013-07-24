@@ -1,0 +1,20 @@
+{
+  "name": "hink",
+  "version": "0.0.0",
+  "description": "API and web interface for notes, tasks, ideas and general files",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:tippenein/hink"
+  },
+  "keywords": [
+    "api",
+    "stuff",
+    "bucket"
+  ],
+  "author": "tippenein & chrisarcand",
+  "license": "BSD"
+}

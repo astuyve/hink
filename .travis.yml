@@ -1,3 +1,5 @@
+before_install:
+  - ./bin/kill-travis.sh
 language: node_js
 node_js:
   - "0.11"

@@ -1,7 +1,7 @@
 var connect = require('connect')
   , connectRoute = require('connect-route')
   , app   = connect()
-  , mongoose = require('mongoose');
+  , mongoose = require('mongoose')
   , notes = require('./controllers/notes')
 
 app.use(connectRoute(function(router) {
@@ -11,4 +11,4 @@ app.use(connectRoute(function(router) {
 }));
 
 app.listen(3000)
-
+module.exports = app;

@@ -1,5 +1,5 @@
 exports.setup = function(router, mongoose) {
-  var Notes = mongoose.model('Notes', Notes)
+  //var Notes = mongoose.model('Notes', Notes)
 
   //List all notes
   router.get('/notes', function (req, res) {
@@ -19,7 +19,6 @@ exports.setup = function(router, mongoose) {
       }
     });
   });
-    
 
   router.get('/notes/:category', function (req, res) {
     var category = req.params.category

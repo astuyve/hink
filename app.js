@@ -14,9 +14,11 @@ db.once('open', function callback () {
 });
 
 app.use(connectRoute(function(router) {
-  router.get('/notes', notes.all)
-  router.get('/notes/:category', notes.getCategory)
-  //router.get('/notes/:id', notes.getNote)
+  mongoose.connect('mongodb://localhost/' + config.dburi)
+  controllers = ['notes']
+  controllers.forEach(function(controller) {
+    require('./controllers/' + controller).setup(router, mongoose);
+  });
 }));
 
 app.listen(config.PORT);

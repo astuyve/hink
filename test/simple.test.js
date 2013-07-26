@@ -1,5 +1,4 @@
-var app = require('../app')
-  , assert = require('assert')
+var assert = require('assert')
 
 module.exports = {
   'testNotes': function() {

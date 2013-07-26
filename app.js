@@ -3,6 +3,15 @@ var connect = require('connect')
   , app   = connect()
   , mongoose = require('mongoose')
   , notes = require('./controllers/notes')
+  , config = require ('./config');
+
+// Connect Mongoose to MongoDB
+mongoose.connect('mongodb://localhost/' + config.DB_URI);
+var db = mongoose.connection;
+db.on('error', console.error.bind(console, 'Database connection error:'));
+db.once('open', function callback () {
+  console.log('Connected to ' + config.DB_URI + ' successfully');
+});
 
 app.use(connectRoute(function(router) {
   router.get('/notes', notes.all)
@@ -10,5 +19,5 @@ app.use(connectRoute(function(router) {
   //router.get('/notes/:id', notes.getNote)
 }));
 
-app.listen(3000)
+app.listen(config.PORT);
 module.exports = app;

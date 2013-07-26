@@ -1,9 +1,8 @@
-
 exports.setup = function(mongoose, db) {
   var Schema = mongoose.Schema,
       ObjectId = Schema.ObjectId;
 
-  Note= new Schema({
+  Note = new Schema({
     created: Date,
     title: String,
     content: String,

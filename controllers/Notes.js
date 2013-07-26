@@ -1,11 +1,10 @@
-// Controller for...well, everything, for now.
-
-var mongoose = require('mongoose'),
-    db = require('./db'),
-    config = require('./config');
-
+// Notes Controller
 
 module.exports = function (app) {
+  var mongoose = require('mongoose'),
+      db = require('../db'),
+      config = require('../config');
+      
   app.resource('/', {
     'get' : function(req, res) {
       db.Note.find({}).exec(function(err, result) { 

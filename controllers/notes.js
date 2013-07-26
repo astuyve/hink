@@ -1,13 +1,11 @@
-exports.setup = function(router, mongoose) {
-  //var Notes = mongoose.model('Notes', Notes)
+var Note = require('../models/Note');
 
-  //List all notes
-  router.get('/notes', function (req, res) {
-    notes = Notes.find()
-    res.end(notes)
-  });
+exports.list = function () {
+  console.log('hello world');
+};
 
   //Create a new note
+  /*
   router.post('/notes', function (req, res) {
     var title = req.params.title;
     var content = req.params.content;
@@ -24,4 +22,4 @@ exports.setup = function(router, mongoose) {
     var category = req.params.category
     res.end(category);
   });
-}
+}*/

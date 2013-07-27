@@ -7,4 +7,4 @@ node_js:
   - "0.10"
   - "0.8"
 notifications:
-  irc: "chat.freenode.net#5chan"
+  irc: "chat.freenode.net#hink"

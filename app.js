@@ -5,7 +5,7 @@ var connect = require('connect')
 var app = connect.createServer();
 
 // Assign controllers for different prefixes
-app.use('/notes', resource(require('./controllers/Notes')));
+app.use('/notes', resource(require('./controllers/notes')));
 
 app.listen(config.port);
 

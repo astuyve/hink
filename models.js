@@ -29,3 +29,4 @@ var Link = new Schema({
 
 exports.dbConnection = db;
 exports.Note = mongoose.model('Note', Note);
+exports.Link = mongoose.model('Link', Link);

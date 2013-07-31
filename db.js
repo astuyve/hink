@@ -5,12 +5,12 @@ var mongoose = require('mongoose'),
     ObjectId = Schema.ObjectId,
     config = require('./config');
 
-//Connect to database
+//DB Connection
 mongoose.connect('mongodb://localhost/' + config.dburi);
 var db = mongoose.connection;
-db.on('error', console.error.bind(console, 'Database connection error:'));
+db.on('error', console.error.bind(console, 'Mongoose: Database connection error:'));
 db.once('open', function callback () {
-  console.log('Connected to ' + config.dburi + ' successfully');
+  console.log('Mongoose: Connected to ' + config.dburi + ' successfully');
 });
 
 // MODELS
@@ -20,5 +20,4 @@ var noteSchema = new Schema({
   content: String,
 });
 
-exports.dbConnection = db;
 exports.Note = mongoose.model('Note', noteSchema);

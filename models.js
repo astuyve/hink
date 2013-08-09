@@ -1,4 +1,4 @@
-// db.js
+// models.js
 
 var mongoose = require('mongoose'),
     Schema = mongoose.Schema,
@@ -14,10 +14,19 @@ db.once('open', function callback () {
 });
 
 // MODELS
-var noteSchema = new Schema({
+var Note = new Schema({
   created_at: Date,
   title: String,
   content: String,
+  category: String,
 });
 
-exports.Note = mongoose.model('Note', noteSchema);
+var Link = new Schema({
+  category: String,
+  title: String,
+  url: String,  // possibly URL type? instead of String
+});
+
+exports.db = db;
+exports.Note = mongoose.model('Note', Note);
+exports.Link = mongoose.model('Link', Link);

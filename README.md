@@ -9,18 +9,21 @@ We're currently developing these models to start with:
 
 - Notes
 - Tasks
-- Bookmarks
+- Links (url bookmarks)
 
-Though half the point of this is to be able to easily add new content types simply by defining a schema, making a new API call, then opening a beer!
+This should be able to easily add new content types simply by defining a schema, making an API call, then opening a beer!
 
 ### Deployment  
-Clone the repo, run <code>npm install</code> to install dependancies in package.json, and then <code>node app.js</code> (development configuration)
+
+- Clone the repo
+- `npm install`
+- `node index.js` (use NODE_ENV=production to run production settings)
+
 *Requires MongoDB, so make sure mongod is running*
 
 ### Testing  
-[![Build Status](https://travis-ci.org/tippenein/hink.png?branch=master)](https://travis-ci.org/tippenein/hink)   
-https://travis-ci.org/tippenein/hink
+[![Build Status](https://travis-ci.org/tippenein/hink.png?branch=master)](https://travis-ci.org/tippenein/hink)
 
 ### Authors
-[tippenein](https://github.com/tippenein)  
+[tippenein](https://github.com/tippenein)
 [ChrisArcand](https://github.com/ChrisArcand)

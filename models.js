@@ -22,6 +22,7 @@ var Note = new Schema({
 });
 
 var Link = new Schema({
+  created_at: Date,
   category: String,
   title: String,
   url: String,  // possibly URL type? instead of String

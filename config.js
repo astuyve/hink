@@ -14,12 +14,14 @@ switch(process.env.NODE_ENV) {
     exports.site = "localhost";
     exports.port = 80;
     exports.errorPages = false;
+    exports.verbose = false
     console.log('running production');
     break;
   // if needed, staging goes here
   default:
     exports.dburi = 'dev'
     exports.site = "localhost";
+    exports.verbose = true
     exports.errorPages=true;
     console.log('Running dev on port ' + exports.port);
     break;

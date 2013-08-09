@@ -3,7 +3,6 @@ var express = require('express')
   , models  = require('./models')
 
 var app = module.exports = express()
-  , db  = module.exports = models.db;
 
 app.use(express.static(__dirname + '/public'));
 app.use(express.cookieParser('some secret here'));

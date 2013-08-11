@@ -7,19 +7,22 @@ Hink: A web-based bucket built in Node.js containing all of your notes, tasks, a
 ### Resources supported  
 We're currently developing these models to start with:
 
-- Notes
-- Tasks
-- Links (url bookmarks)
+- [x] Notes
+- [ ] Links (url bookmarks)
+- [ ] Tasks
 
-This should be able to easily add new content types simply by defining a schema, making an API call, then opening a beer!
+Hink should be able to easily add new content types simply by defining a schema
+and restarting the server.
 
-### Deployment  
+There is a cli script (`./bin/cli`) to mess around with simple things (for now)
+
+### Deployment
 
 - Clone the repo
 - `npm install`
 - `node index.js` (use NODE_ENV=production to run production settings)
 
-*Requires MongoDB, so make sure mongod is running*
+*Requires MongoDB*
 
 ### Testing  
 [![Build Status](https://travis-ci.org/tippenein/hink.png?branch=master)](https://travis-ci.org/tippenein/hink)

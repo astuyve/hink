@@ -16,7 +16,7 @@ app.get('/', function(req, res) {
   endpoints.forEach(function(name) {
     ep.push(String(name))
   })
-  res.send('try one of the endpoints: \n' + ep)
+  res.send('endpoints available: \n' + ep)
 })
 
 // load controllers

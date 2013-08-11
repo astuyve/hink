@@ -6,6 +6,11 @@ var mongoose = require('mongoose')
 var db = mongoose.connection;
 var Note = db.model('Note', Note)
 
+exports.cat_list = function(req, res, next) {
+  // list all current categories
+  var all = Note.find({})
+  console.log(all)
+}
 
 exports.list = function(req, res, next){
   var category = req.params.category

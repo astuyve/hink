@@ -28,6 +28,7 @@ var Link = new Schema({
   url: String,  // possibly URL type? instead of String
 });
 
+// register the models
 exports.db = db;
 exports.Note = mongoose.model('Note', Note);
 exports.Link = mongoose.model('Link', Link);

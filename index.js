@@ -1,6 +1,7 @@
 var express = require('express')
   , config  = require('./config')
   , models  = require('./models')
+  , endpoints = require('./lib/generic_control').endpoints
 
 var app = module.exports = express()
 
@@ -11,9 +12,13 @@ app.use(express.bodyParser());
 app.use(express.methodOverride());
 
 app.get('/', function(req, res) {
-  endpoints = "notes, links"
-  res.send('try one of the endpoints: ' + endpoints)
+  ep = []
+  endpoints.forEach(function(name) {
+    ep.push(String(name))
+  })
+  res.send('try one of the endpoints: \n' + ep)
 })
+
 // load controllers
 require('./lib/boot')(app, { verbose: !module.parent });
 

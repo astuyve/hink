@@ -7,7 +7,7 @@ Hink: A web-based bucket built in Node.js containing all of your notes, tasks, a
 ### Resources supported  
 We're currently developing these models to start with:
 
-- [x] Notes
+- [X] Notes
 - [ ] Links (url bookmarks)
 - [ ] Tasks
 

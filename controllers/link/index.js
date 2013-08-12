@@ -4,10 +4,20 @@
 //TODO This controller is too similar to Notes, Find some way to abstract them
 
 var mongoose = require('mongoose')
+  , Set = require('set')
+  , db = mongoose.connection
+  , Link = db.model('Link', Link)
 
-var db = mongoose.connection;
-var Link = db.model('Link', Link)
-
+exports.cat_list = function(req, res, next) {
+  // list all current categories
+  Link.find({}).exec(function(err, all) {
+    var set = new Set([])
+    all.forEach(function(item) {
+      set.add(item.category)
+    })
+    res.end(JSON.stringify(set.get()));
+  })
+}
 
 exports.list = function(req, res, next){
   var category = req.params.category

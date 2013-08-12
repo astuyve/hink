@@ -2,14 +2,19 @@
 // There should be a GET list all and POST new note defined for cli
 // The rest of the endpoints are for frontend consumption
 var mongoose = require('mongoose')
-
-var db = mongoose.connection;
-var Note = db.model('Note', Note)
+  , Set = require('set')
+  , db = mongoose.connection
+  , Note = db.model('Note', Note)
 
 exports.cat_list = function(req, res, next) {
   // list all current categories
-  var all = Note.find({})
-  console.log(all)
+  Note.find({}).exec(function(err, all) {
+    var set = new Set([])
+    all.forEach(function(item) {
+      set.add(item.category)
+    })
+    res.end(JSON.stringify(set.get()));
+  })
 }
 
 exports.list = function(req, res, next){
@@ -50,7 +55,6 @@ exports.create = function(req, res, next){
 // look here http://mongoosejs.com/docs/queries.html
 exports.search = function(req, res, next) {
   var q = req.params.q
-  var category = req.params.category
   Note
     .find({})
     .where(q).in(['title', 'content'])

@@ -1,7 +1,9 @@
 var express = require('express')
   , config  = require('./config')
+  , mongoose = require('mongoose')
   , models  = require('./models')
   , endpoints = require('./lib/generic_control').endpoints
+
 
 var app = module.exports = express()
 
@@ -11,12 +13,30 @@ app.use(express.session());
 app.use(express.bodyParser());
 app.use(express.methodOverride());
 
+//pull this query logic out from index.js
 app.get('/', function(req, res) {
-  ep = []
-  endpoints.forEach(function(name) {
-    ep.push(String(name))
-  })
-  res.send('endpoints available: \n' + ep)
+  results = []
+  if (req.query.q) {
+    // search all endpoints for query q
+    q = req.query.q
+    for (model in models) {
+      if (model === 'db') { continue }
+      m = mongoose.model(model)
+      var regex = new RegExp(q, 'i')  // ignore case
+      m.find({ text: regex }).exec(function(err, result) {
+        if (!err) {
+          results.push(result);
+        }
+      });
+    }
+    res.end("results of search " + JSON.stringify(results))
+  } else {
+    ep = []
+    endpoints.forEach(function(name) {
+      ep.push(String(name))
+    })
+    res.send('endpoints available: \n' + ep)
+  }
 })
 
 // load controllers

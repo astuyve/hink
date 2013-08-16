@@ -55,11 +55,9 @@ exports.create = function(req, res, next){
 // look here http://mongoosejs.com/docs/queries.html
 exports.search = function(req, res, next) {
   var q = req.params.q
-  Note
-    .find({})
-    .where(q).in(['title', 'content'])
-    .exec(function(err, result) {
-      console.log(result);
+  var regex = new RegExp(q,'i')
+  Note.find({ content: regex }, function(err, result) {
+    res.end(JSON.stringify(result))
   })
 }
 

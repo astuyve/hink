@@ -53,16 +53,12 @@ exports.create = function(req, res, next){
   });
 }
 
-// This doesn't work yet.
-// look here http://mongoosejs.com/docs/queries.html
+// only searches content at the moment
 exports.search = function(req, res, next) {
   var q = req.params.q
-  var category = req.params.category
-  Link
-    .find({})
-    .where(q).in(['title', 'url'])
-    .exec(function(err, result) {
-      console.log(result);
+  var regex = new RegExp(q, 'i')
+  Link.find({ content: regex }, function(err, result) {
+    res.end(JSON.stringify(result));
   })
 }
 

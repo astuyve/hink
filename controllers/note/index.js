@@ -56,7 +56,7 @@ exports.create = function(req, res, next){
 exports.search = function(req, res, next) {
   var q = req.params.q
   var regex = new RegExp(q,'i')
-  Note.find({ content: regex }, function(err, result) {
+  Note.textSearch(q, function(err, result) {
     res.end(JSON.stringify(result))
   })
 }

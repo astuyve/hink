@@ -1,6 +1,5 @@
 // Notes Controller
-// There should be a GET list all and POST new note defined for cli
-// The rest of the endpoints are for frontend consumption
+
 var mongoose = require('mongoose')
   , Set = require('set')
   , db = mongoose.connection
@@ -8,12 +7,22 @@ var mongoose = require('mongoose')
 
 exports.cat_list = function(req, res, next) {
   // list all current categories
-  Note.find({}).exec(function(err, all) {
+  Note.find({}).exec(function(err, doc) {
     var set = new Set([])
-    all.forEach(function(item) {
+    doc.forEach(function(item) {
       set.add(item.category)
     })
     res.end(JSON.stringify(set.get()));
+  })
+}
+
+exports.search = function(req, res, next) {
+  var q = req.params.q
+  var regex = new RegExp(q,'i')
+  Note.find({ content: regex }, function(err, doc1) {
+    Note.find({ title: regex }, function(err, doc2) {
+      res.end(JSON.stringify(doc1 + doc2))
+    })
   })
 }
 
@@ -51,20 +60,10 @@ exports.create = function(req, res, next){
   });
 }
 
-// This doesn't work yet.
-// look here http://mongoosejs.com/docs/queries.html
-exports.search = function(req, res, next) {
-  var q = req.params.q
-  var regex = new RegExp(q,'i')
-  Note.textSearch(q, function(err, result) {
-    res.end(JSON.stringify(result))
-  })
-}
-
 exports.show = function(req, res, next){
-  Note.find({}).exec(function(err, result) {
+  Note.findOne({ id: req.params.id }, function (err, doc){
     if (!err) { 
-      res.end(JSON.stringify(result));
+      res.end(JSON.stringify(doc));
     } else {
       res.end("nothin'!");
       // error handling
@@ -72,12 +71,22 @@ exports.show = function(req, res, next){
   });
 };
 
+exports.update = function(req, res, next){
+  Note.findOne({ id: req.params.id }, function (err, doc){
+    //XXX make this suck less
+    var title = req.body.title
+    var content = req.body.content
+    if (title) {
+      doc.title = title
+    }
+    if (content) {
+      doc.content = content
+    }
+    doc.save();
+  });
+};
+
 exports.edit = function(req, res, next){
   res.end('edit');
 };
-
-exports.update = function(req, res, next){
-  res.end('update')
-};
-
 

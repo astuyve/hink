@@ -19,6 +19,23 @@ exports.cat_list = function(req, res, next) {
   })
 }
 
+exports.search = function(req, res, next) {
+  var q = req.params.q
+  var regex = new RegExp(q,'i')
+  var results = new Set()
+  Link.find({ content: regex }, function(err, doc) {
+    doc.forEach(function(item) {
+      results.add(doc)
+    })
+  })
+  Link.find({ title: regex }, function(err, doc) {
+    doc.forEach(function(item) {
+      results.add(doc)
+    })
+    res.end(JSON.stringify(results.get()))
+  })
+}
+
 exports.list = function(req, res, next){
   var category = req.params.category
   Link.find({category: category}).exec(function(err, result) {
@@ -53,19 +70,10 @@ exports.create = function(req, res, next){
   });
 }
 
-// only searches content at the moment
-exports.search = function(req, res, next) {
-  var q = req.params.q
-  var regex = new RegExp(q, 'i')
-  Link.find({ content: regex }, function(err, result) {
-    res.end(JSON.stringify(result));
-  })
-}
-
 exports.show = function(req, res, next){
-  Link.find({}).exec(function(err, result) {
+  Link.findOne({ id: req.params.id }, function (err, doc){
     if (!err) { 
-      res.end(JSON.stringify(result));
+      res.end(JSON.stringify(doc));
     } else {
       res.end("nothin'!");
       // error handling
@@ -73,10 +81,21 @@ exports.show = function(req, res, next){
   });
 };
 
-exports.edit = function(req, res, next){
-  res.end('edit');
+exports.update = function(req, res, next){
+  Link.findOne({ id: req.params.id }, function (err, doc){
+    //XXX make this suck less
+    var title = req.body.title
+    var url = req.body.url
+    if (title) {
+      doc.title = title
+    }
+    if (url) {
+      doc.url = url
+    }
+    doc.save();
+  });
 };
 
-exports.update = function(req, res, next){
-  res.end('update')
+exports.edit = function(req, res, next){
+  res.end('edit');
 };

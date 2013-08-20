@@ -16,13 +16,12 @@ exports.cat_list = function(req, res, next) {
   })
 }
 
+//XXX only searches content at the moment, should also search titles
 exports.search = function(req, res, next) {
   var q = req.params.q
   var regex = new RegExp(q,'i')
-  Note.find({ content: regex }, function(err, doc1) {
-    Note.find({ title: regex }, function(err, doc2) {
-      res.end(JSON.stringify(doc1 + doc2))
-    })
+  Note.find({ content: regex }, function(err, doc) {
+    res.end(JSON.stringify(doc))
   })
 }
 

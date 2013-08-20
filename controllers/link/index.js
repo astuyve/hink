@@ -22,17 +22,8 @@ exports.cat_list = function(req, res, next) {
 exports.search = function(req, res, next) {
   var q = req.params.q
   var regex = new RegExp(q,'i')
-  var results = new Set()
   Link.find({ content: regex }, function(err, doc) {
-    doc.forEach(function(item) {
-      results.add(doc)
-    })
-  })
-  Link.find({ title: regex }, function(err, doc) {
-    doc.forEach(function(item) {
-      results.add(doc)
-    })
-    res.end(JSON.stringify(results.get()))
+    res.end(JSON.stringify(doc))
   })
 }
 

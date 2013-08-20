@@ -1,7 +1,7 @@
 Hink
 ====
 
-### Purpose  
+### Purpose
 Hink: A web-based bucket built in Node.js containing all of your notes, tasks, and bookmarks in a taggable, indexable way with a RESTful API to access them.
 
 
@@ -21,7 +21,6 @@ We're currently developing these models to start with:
  GET /<name>/:category/:id/edit -> edit
  PUT /<name>/:category/:id -> update
 ```
->>>>>>> Stashed changes
 
 Hink should be able to easily add new content types simply by defining a schema
 and restarting the server.

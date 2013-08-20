@@ -23,7 +23,6 @@
     "supertest": "~0.7.1",
     "mocha": "~1.12.0",
     "should": "~1.2.2",
-    "set": "~1.0.1",
-    "mongoose-text-search": "0.0.2"
+    "set": "~1.0.1"
   }
 }

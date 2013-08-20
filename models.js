@@ -4,7 +4,6 @@ var mongoose = require('mongoose'),
     Schema = mongoose.Schema,
     ObjectId = Schema.ObjectId,
     config = require('./config');
-    textSearch = require("mongoose-text-search");
 
 //DB Connection
 mongoose.connect('mongodb://localhost/' + config.dburi);
@@ -28,28 +27,6 @@ var Link = new Schema({
   title: String,
   url: String,  // possibly URL type? instead of String
 });
-Note.plugin(textSearch)
-Note.index({
-    title   : "text"
-  , content : "text"
-}, {
-    name: "best_match_index"
-  , weights: {
-        title: 5
-      ,  content: 4
-  }
-})
-Link.plugin(textSearch)
-Link.index({
-    title : "text"
-  , url   : "text"
-}, {
-    name: "best_match_index",
-    weights: {
-        title: 5,
-        url: 4,
-    }
-})
 
 // register the models
 exports.db = db;

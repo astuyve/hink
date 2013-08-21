@@ -85,7 +85,10 @@ exports.update = function(req, res, next){
   });
 };
 
-exports.edit = function(req, res, next){
-  res.end('edit');
+exports.delete = function(req, res, next){
+  Note.remove({ _id: req.params.id }, function (err){
+    res.end("deleted")
+    //fuck that error
+  })
 };
 

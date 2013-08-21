@@ -21,7 +21,7 @@ exports.cat_list = function(req, res, next) {
 
 exports.search = function(req, res, next) {
   var q = req.params.q
-  var regex = new RegExp(q,'i')
+  var regex = new RegExp('/' + q + '/','i')
   Link.find({ content: regex }, function(err, doc) {
     res.end(JSON.stringify(doc))
   })
@@ -87,6 +87,9 @@ exports.update = function(req, res, next){
   });
 };
 
-exports.edit = function(req, res, next){
-  res.end('edit');
+exports.delete = function(req, res, next){
+  Link.remove({ _id: req.params.id }, function (err){
+    //fuck that error
+    res.end('deleted')
+  })
 };

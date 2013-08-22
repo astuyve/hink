@@ -20,8 +20,8 @@ exports.cat_list = function(req, res, next) {
 exports.search = function(req, res, next) {
   var q = req.params.q
   var regex = new RegExp(q,'i')
-  Note.find({ content: regex }, function(err, doc) {
-    res.end(JSON.stringify(doc))
+  Note.find( { $or:[{ content: regex }, { title: regex }]}, function(err, docs) {
+    res.end(JSON.stringify(docs))
   })
 }
 

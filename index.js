@@ -15,29 +15,37 @@ app.use(express.methodOverride());
 
 //pull this query logic out from index.js
 app.get('/', function(req, res) {
-  results = []
   if (req.query.q) {
-    // search all endpoints for query q
-    q = req.query.q
-    for (model in models) {
-      if (model === 'db') { continue }
-      m = mongoose.model(model)
-      var regex = new RegExp(q, 'i')  // ignore case
-      m.find({ text: regex }).exec(function(err, result) {
-        if (!err) {
-          results.push(result);
-        }
-      });
-    }
-    res.end("results of search " + JSON.stringify(results))
+    general_search(req.query.q, function(results) {
+      res.end(JSON.stringify(results))
+    })
   } else {
     ep = []
     endpoints.forEach(function(name) {
+      // string not object for displaying
       ep.push(String(name))
     })
-    res.send('endpoints available: \n' + ep)
+    res.end(JSON.stringify(ep))
   }
 })
+
+function general_search(query, callback) {
+  // search all endpoints for query q
+  var results = []
+  for (model in models) {
+    if (model === 'db') { continue }
+    var m = mongoose.model(model)
+    var regex = new RegExp(query, 'i')  // ignore case
+    m.find({ content: regex }, function(err, docs) {
+      docs.forEach(function(doc) {
+        if (doc !== []) {
+          results.push(doc)
+        }
+      })
+    })
+  }
+  callback(results)
+}
 
 // load controllers
 require('./lib/boot')(app, { verbose: !module.parent });

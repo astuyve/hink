@@ -22,7 +22,7 @@ exports.cat_list = function(req, res, next) {
 exports.search = function(req, res, next) {
   var q = req.params.q
   var regex = new RegExp('/' + q + '/','i')
-  Link.find({ content: regex }, function(err, doc) {
+  Link.find( { $or:[{ content: regex }, { title: regex }]}, function(err, docs) {
     res.end(JSON.stringify(doc))
   })
 }

@@ -7,6 +7,7 @@ exports.port = 3000;
 exports.errorPages = true;
 exports.tests = true;
 exports.staticDir = './public';
+exports.imageDir  = './public/files/'
 exports.dburi = 'hink';
 switch(process.env.NODE_ENV) {
   case 'production':

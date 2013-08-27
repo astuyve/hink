@@ -16,9 +16,8 @@ app.use(express.methodOverride());
 //pull this query logic out from index.js
 app.get('/', function(req, res) {
   if (req.query.q) {
-    general_search(req.query.q, function(results) {
-      res.end(JSON.stringify(results))
-    })
+    results = general_search(req.query.q)
+    res.end(JSON.stringify(results))
   } else {
     ep = []
     endpoints.forEach(function(name) {
@@ -29,7 +28,7 @@ app.get('/', function(req, res) {
   }
 })
 
-function general_search(query, callback) {
+function general_search(query) {
   // search all endpoints for query q
   var results = []
   for (model in models) {
@@ -44,7 +43,7 @@ function general_search(query, callback) {
       })
     })
   }
-  callback(results)
+  return results
 }
 
 // load controllers

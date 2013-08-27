@@ -1,52 +1,75 @@
-#!/usr/bin/env python
+#!/usr/bin/env node
 
-# This is just a prototype of what the cli will be.
-# It can be used to test things in the mean time.
+var http = require('http')
+  , port = 3000
 
-import requests
-import json
+var base_url = '127.0.0.1'
 
-USAGE = """
-usage: ./cli <method> <category> <title> <url>
+var usage    = "usage: cli <method> <model> <category>"
+  , argc     = process.argv.length - 1  // wtf extra length batman?
+  , method   = process.argv[2]
+  , model    = process.argv[3]
+  , category = process.argv[4]
 
-methods for text based data:
-    list
-    create
-    search
-"""
-URL = 'http://localhost:3000/link/'
-
-def main(method, **kwargs):
-    if method == 'list':
-        category = kwargs.get('category')
-        path = URL + category
-        r = requests.get(path)
-
-        res = json.loads(r.text)
-        for item in res:
-            print item.get('title')
-            print '  - ' + item.get('url')
-            print
-    if method == 'create':
-        category = kwargs.get('category')
-        path = URL + category
-        r = requests.post(path, data=kwargs)
-        print r.status_code
-    if method == 'search':
-        print "can't search yet"
-        pass
+if (argc < 4) {
+  if (argc < 3) {
+    console.log(usage)
+    process.exit()
+  } else {
+    // CAT_LIST - list of categories
+    var catList = function(model) {
+      var options = {
+          host: base_url
+        , port: port
+        , path: '/' + model
+        , method: 'GET'
+      }
+      var req = http.get(options, function(res) {
+        res.on('data', function(d) {
+          process.stdout.write(d + '\n')
+        })
+      })
+      req.end()
+    }(model)
+  }
+}
 
 
-if __name__ == '__main__':
-    import sys
-    if len(sys.argv) < 3:
-        sys.exit(USAGE)
-    method = sys.argv[1]
-    category = sys.argv[2]
-    kwargs = { 'category': category }
-    if method == 'create':
-        kwargs['title'] = sys.argv[3] or ''
-        kwargs['url'] = sys.argv[4] or ''
+// LIST
+if (method == 'list') {
+  var options = {
+      host: base_url
+    , port: port
+    , path: '/' + model + '/' + category
+    , method: 'GET'
+  }
+  var req = http.get(options, function(res) {
+    res.on('data', function(d) {
+      docs = JSON.parse(d)
+      writeList(docs)
+    })
+  })
+  req.end()
+  req.on('error', function(err) {
+    console.log(err)
+  })
+}
 
-    print "requesting %s on %s%s" % (method, URL, category)
-    main(method, **kwargs)
+var writeList = function(docs) {
+  // receive json list and print to stdout properly
+  content_types = ['url', 'content', 'path']
+  docs.forEach(function(doc) {
+    if (doc.content) {
+      body = doc.content
+    }
+    if (doc.url) {
+      body = doc.url
+    }
+    if (doc.path) {
+      body = doc.path
+    }
+    process.stdout.write(doc.title + '\n' + '\t- ' + body + '\n')
+  })
+}
+
+

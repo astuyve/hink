@@ -35,14 +35,10 @@ if (argc > 3) {
   //
   url = url + '/' + category
 
-  /* 
-  ********** functionality ************
-  */
-
   //CREATE
   if (method == 'create') {
     data = { title: optArg1
-          , content: optArg2 }
+           , content: optArg2 }
     request.post(url, {form: data})
   }
 
@@ -76,16 +72,7 @@ var writeList = function(docs) {
   content_types = ['url', 'content', 'path']
 
   docs.forEach(function(doc) {
-    if (doc.content) {
-      body = doc.content
-    }
-    if (doc.url) {
-      body = doc.url
-    }
-    if (doc.path) {
-      body = doc.path
-    }
-    process.stdout.write(doc.title + '\n' + '\t- ' + body + '\n')
+    process.stdout.write(doc.title + '\n' + '\t- ' + doc.content + '\n')
   })
 }
 var cPrint = function(str) {

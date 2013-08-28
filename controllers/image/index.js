@@ -1,89 +1,24 @@
 // Image Controller
 
 var mongoose = require('mongoose')
-  , Set = require('set')
   , db = mongoose.connection
-  , Image = db.model('Image')
+  , Image = db.model('Note')
+  , TextController = require('./../../lib/textController').TextController
 
-exports.cat_list = function(req, res, next) {
-  // list all current categories
-  Image.find({}).exec(function(err, doc) {
-    var set = new Set([])
-    doc.forEach(function(item) {
-      set.add(item.category)
-    })
-    res.end(JSON.stringify(set.get()));
-  })
-}
+var control = new TextController(Image)
 
-exports.search = function(req, res, next) {
-  var q = req.params.q
-  var regex = new RegExp(q,'i')
-  Image.find( { title: regex }, function(err, docs) {
-    res.end(JSON.stringify(docs))
-  })
-}
+exports.cat_list = control.cat_list.bind(control)
 
-exports.list = function(req, res, next){
-  var category = req.params.category
-  Image.find({category: category}).exec(function(err, docs) {
-    if (!err) {
-      res.end(JSON.stringify(docs));
-    } else {
-      // profeshnul error handling
-      res.end("UH OH!");
-    };
-  });
-};
+exports.search = control.search.bind(control)
 
-exports.create = function(req, res, next){
-  // category should probably make a new mongo collection
-  var title = req.body.title || 'Untitled';
-  var content = req.files;
-  console.log(content)
+exports.list = control.list.bind(control)
 
-  if (!content) {
-    res.end('must supply an image\n')
-  }
-  var anImage = new Image({ category: req.params.category
-                          , created_at: Date()
-                          , title: title
-                          , path: content.path });
-  anImage.save(function(err) {
-    if (!err) {
-      res.end('added!');
-    } else {
-      // error handling
-      res.end('not added!');
-    }
-  });
-}
+exports.create = control.create.bind(control)
 
-exports.show = function(req, res, next){
-  Image.findOne({ _id: req.params.id }, function (err, doc){
-    if (!err) {
-      res.end(JSON.stringify(doc));
-    } else {
-      res.end("nothin'!");
-      // error handling
-    };
-  });
-};
+exports.show = control.show.bind(control)
 
-exports.update = function(req, res, next){
-  Image.findOne({ _id: req.params.id }, function (err, doc){
-    var title = req.body.title
-    if (title) {
-      doc.title = title
-    }
-    doc.save();
-  });
-};
+exports.update = control.update.bind(control)
 
-exports.delete = function(req, res, next){
-  Image.remove({ _id: req.params.id }, function (err){
-    res.end("deleted")
-    //fuck that error
-  })
-};
+exports.delete = control._delete.bind(control)
+
 

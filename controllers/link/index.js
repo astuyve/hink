@@ -1,95 +1,22 @@
-// Links Controller
-// There should be a GET list all and POST new note defined for cli
-// The rest of the endpoints are for frontend consumption
-//TODO This controller is too similar to Notes, Find some way to abstract them
+// Link Controller
 
 var mongoose = require('mongoose')
-  , Set = require('set')
   , db = mongoose.connection
-  , Link = db.model('Link', Link)
+  , Link = db.model('Link')
+  , TextController = require('./../../lib/textController').TextController
 
-exports.cat_list = function(req, res, next) {
-  // list all current categories
-  Link.find({}).exec(function(err, all) {
-    var set = new Set([])
-    all.forEach(function(item) {
-      set.add(item.category)
-    })
-    res.end(JSON.stringify(set.get()));
-  })
-}
+var control = new TextController(Link)
 
-exports.search = function(req, res, next) {
-  var q = req.params.q
-  var regex = new RegExp('/' + q + '/','i')
-  Link.find( { $or:[{ content: regex }, { title: regex }]}, function(err, docs) {
-    res.end(JSON.stringify(doc))
-  })
-}
+exports.cat_list = control.cat_list.bind(control)
 
-exports.list = function(req, res, next){
-  var category = req.params.category
-  Link.find({category: category}).exec(function(err, result) {
-    if (!err) {
-      res.end(JSON.stringify(result));
-    } else {
-      // profeshnul error handling
-      res.end("UH OH!");
-    };
-  });
-};
+exports.search = control.search.bind(control)
 
-exports.create = function(req, res, next){
-  // category should probably make a new mongo collection
-  var title = req.body.title || 'Untitled';
-  var url = req.body.url;
+exports.list = control.list.bind(control)
 
-  if (!url) {
-    res.end('must supply content\n')
-  }
-  var aLink = new Link({ category: req.params.category
-                       , created_at: Date()
-                       , title: title
-                       , url: url });
-  aLink.save(function(err, result) {
-    if (!err) {
-      res.end('added!');
-    } else {
-      // error handling
-      res.end('not added!');
-    }
-  });
-}
+exports.create = control.create.bind(control)
 
-exports.show = function(req, res, next){
-  Link.findOne({ id: req.params.id }, function (err, doc){
-    if (!err) { 
-      res.end(JSON.stringify(doc));
-    } else {
-      res.end("nothin'!");
-      // error handling
-    };
-  });
-};
+exports.show = control.show.bind(control)
 
-exports.update = function(req, res, next){
-  Link.findOne({ id: req.params.id }, function (err, doc){
-    //XXX make this suck less
-    var title = req.body.title
-    var url = req.body.url
-    if (title) {
-      doc.title = title
-    }
-    if (url) {
-      doc.url = url
-    }
-    doc.save();
-  });
-};
+exports.update = control.update.bind(control)
 
-exports.delete = function(req, res, next){
-  Link.remove({ _id: req.params.id }, function (err){
-    //fuck that error
-    res.end('deleted')
-  })
-};
+exports.delete = control._delete.bind(control)

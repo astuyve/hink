@@ -1,7 +1,6 @@
 #!/usr/bin/env node
 
 var request  = require('request')
-  , path     = require('path')
   // Fill these in if using deployed Hink
   , port     = 3000
   , base_url = 'localhost:'+ port
@@ -9,30 +8,24 @@ var request  = require('request')
   , method   = process.argv[2]
   , model    = process.argv[3]
   , category = process.argv[4]
-  , title    = process.argv[5] || null
-  , content  = process.argv[6] || null
+  , optArg1  = process.argv[5] || null
+  , optArg2  = process.argv[6] || null
   , usage    = "usage: cli <method> <model> <category>\n\t" +
                   "supplied methods\n\t- create\n\t- list\n\t- search"
-   , url = path.join(base_url, model)  // initial value of the url
 
-
-console.log("title: " + title + "\ncontent: " + content + "\n")
-console.log("argc = " + argc)
-//global options
 
 // arg logic
 if (argc < 3) {
-  console.log(usage)
-  process.exit()
-} 
+  request.get('http://' + base_url, function(err, res, body) {
+    cPrint("models available: " + body + '\n\n' + usage)
+    process.exit()
+  })
+}
+
+url = 'http://' + base_url+'/'+model  // initial value of the url
 if (argc === 3) {
   // CAT_LIST - list of categories
-  console.log("calling cat_list")
-
   request.get(url, function(err, res, body) {
-    console.log(url)
-    console.log(res)
-    console.log(body)
     if (!err && res.statusCode == 200) {
       cPrint(body)
     }
@@ -40,7 +33,7 @@ if (argc === 3) {
 }
 if (argc > 3) {
   //
-  url = path.join(url, category)
+  url = url + '/' + category
 
   /* 
   ********** functionality ************
@@ -48,43 +41,53 @@ if (argc > 3) {
 
   //CREATE
   if (method == 'create') {
-    data = { title: title
-          , content: content }
-    var url = path.join(modelUrl, category)
+    data = { title: optArg1
+          , content: optArg2 }
     request.post(url, {form: data})
   }
 
 
   // LIST
   if (method == 'list') {
-    console.log(url)
-    request(url, function(err, res, body) {
-      console.log(res)
+    request.get(url, function(err, res, body) {
       if (!err && res.statusCode == 200) {
         docs = JSON.parse(body)
         writeList(docs)
       }
     })
   }
-
-  var writeList = function(docs) {
-    // receive json list and print to stdout properly
-    content_types = ['url', 'content', 'path']
-    docs.forEach(function(doc) {
-      if (doc.content) {
-        body = doc.content
+  // SEARCH
+  if (method == 'search') {
+    url = url + '/search/?q=' + optArg1
+    console.log(url)
+    request.get(url, function(err, res, body) {
+      if (!err && res.statusCode == 200) {
+        docs = JSON.parse(body)
+        writeList(docs)
       }
-      if (doc.url) {
-        body = doc.url
-      }
-      if (doc.path) {
-        body = doc.path
-      }
-      process.stdout.write(doc.title + '\n' + '\t- ' + body + '\n')
     })
   }
+}
 
-  var cPrint = function(str) {
-    process.stdout.write(string + '\n')
-  }
+
+var writeList = function(docs) {
+  // receive json list and print to stdout properly
+  if (!docs) { process.stdout.write('no results\n'); process.exit() }
+  content_types = ['url', 'content', 'path']
+
+  docs.forEach(function(doc) {
+    if (doc.content) {
+      body = doc.content
+    }
+    if (doc.url) {
+      body = doc.url
+    }
+    if (doc.path) {
+      body = doc.path
+    }
+    process.stdout.write(doc.title + '\n' + '\t- ' + body + '\n')
+  })
+}
+var cPrint = function(str) {
+  process.stdout.write(str + '\n')
 }

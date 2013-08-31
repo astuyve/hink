@@ -10,7 +10,7 @@ We're currently developing these models to start with:
 
 - Notes
 - Links (url bookmarks)
-- Tasks
+- Images
 
 ### Endpoints supplied by all:
 ```
@@ -25,7 +25,9 @@ We're currently developing these models to start with:
 Hink should be able to easily add new content types simply by defining a schema
 and restarting the server.
 
-There is a cli script (`./bin/cli`) to mess around with simple things (for now)
+### The CLI
+There is a cli script (`./bin/cli`) for use.
+![Simple cli functionality](cli-screeny.png)
 
 ### Deployment
 

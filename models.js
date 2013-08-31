@@ -16,16 +16,16 @@ db.once('open', function callback () {
 // MODELS
 var Note = new Schema({
   created_at: Date,
+  category: String,
   title: String,
   content: String,
-  category: String,
 });
 
 var Link = new Schema({
   created_at: Date,
   category: String,
   title: String,
-  url: String,  // possibly URL type? instead of String
+  content: String,
 });
 
 var Image = new Schema({

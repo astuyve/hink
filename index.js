@@ -2,7 +2,7 @@ var express = require('express')
   , config  = require('./config')
   , mongoose = require('mongoose')
   , models  = require('./models')
-  , endpoints = require('./lib/generic_control').endpoints
+  , endpoints = require('./lib/baseController').endpoints
 
 
 var app = module.exports = express()
@@ -10,8 +10,11 @@ var app = module.exports = express()
 app.use(express.static(__dirname + '/public'));
 app.use(express.cookieParser('some secret here'));
 app.use(express.session());
-app.use(express.bodyParser());
 app.use(express.methodOverride());
+app.use(express.bodyParser(
+      { keepExtensions: true
+      , uploadDir: __dirname + "public/uploads"
+      }));
 
 //pull this query logic out from index.js
 app.get('/', function(req, res) {

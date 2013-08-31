@@ -54,7 +54,7 @@ if (argc > 3) {
   }
   // SEARCH
   if (method == 'search') {
-    url = url + '/search/?q=' + optArg1
+    url = url + '/search/?q='+optArg1'
     console.log(url)
     request.get(url, function(err, res, body) {
       if (!err && res.statusCode == 200) {

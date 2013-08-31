@@ -33,6 +33,7 @@ var Image = new Schema({
   category: String,
   title: String,
   path: String,
+  description: String,
 });
 
 // register the models

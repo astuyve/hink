@@ -18,7 +18,12 @@ switch(process.env.NODE_ENV) {
     exports.verbose = false
     console.log('running production');
     break;
-  // if needed, staging goes here
+  case 'test':
+    exports.dburi = 'test'
+    exports.site = "localhost";
+    exports.verbose = true
+    exports.errorPages=true;
+    break;
   default:
     exports.dburi = 'dev'
     exports.site = "localhost";

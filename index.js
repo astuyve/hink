@@ -31,14 +31,16 @@ app.get('/', function(req, res) {
   }
 })
 
-function general_search(query) {
+var general_search = function(query) {
   // search all endpoints for query q
   var results = []
   for (model in models) {
     if (model === 'db') { continue }
+    console.log(model)
     var m = mongoose.model(model)
     var regex = new RegExp(query, 'i')  // ignore case
-    m.find({ content: regex }, function(err, docs) {
+
+    m.find({ $or:[{ content: regex }, { title: regex }]}, function(err, docs) {
       docs.forEach(function(doc) {
         if (doc !== []) {
           results.push(doc)

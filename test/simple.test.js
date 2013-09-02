@@ -11,4 +11,12 @@ describe('app', function(){
         .expect(200, done)
     });
   });
+  describe('search', function(){
+
+    it('should return "no results"', function(done){
+      request(app)
+        .get('/note/cats/search/?q=stuff')
+        .expect('no results', done)
+    })
+  })
 })

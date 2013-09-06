@@ -1,0 +1,25 @@
+{ "models":
+  { "Note":
+    { "title": "string"
+    , "content": "string"
+    , "category": "string"
+    , "searchable": ["title", "content"]
+    }
+  },
+  { "Link":
+    { "title": "string"
+    , "content": "string"
+    , "category": "string"
+    , "searchable": ["title", "content]
+    }
+  },
+  { "Image":
+    { "title": "string"
+    , "type": 'binary'
+    , "tags": "string"
+    , "category": "string"
+    , "path": "string"
+    , "searchable": ["title", "tags"]
+    }
+  }
+}

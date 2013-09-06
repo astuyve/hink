@@ -2,6 +2,9 @@
 ** Configuration settings 
 */
 
+mjson = JSON.parse(require('./models.json'))
+console.log(mjson)
+
 exports.site = "localhost";
 exports.port = 3000;
 exports.errorPages = true;

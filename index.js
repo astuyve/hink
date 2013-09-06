@@ -1,9 +1,18 @@
 var express = require('express')
   , config  = require('./config')
   , mongoose = require('mongoose')
-  , models  = require('./models')
+  , models  = require('./models.json')
   , endpoints = require('./lib/baseController').endpoints
+  , config = require('./config');
 
+//DB Connection
+mongoose.connect('mongodb://localhost/' + config.dburi);
+var db = mongoose.connection;
+db.on('error', console.error.bind(console, 'Mongoose: Database connection error:'));
+db.once('open', function callback () {
+  console.log('Mongoose: Connected to ' + config.dburi + ' successfully');
+});
+exports.db = db;
 
 var app = module.exports = express()
 

@@ -1,0 +1,39 @@
+# We dont define schemas in the traditional sense
+# since we generate the controllers via a controller template (textController,
+# fileController, etc)
+#
+# This simply provides an outline of the data to be stored.
+# @searchable - searchable content keys. Since these can differ by the type of
+#   data youre storing. (ex. task data might have a date_due searchable key)
+# @type - This simply determines which controller generates the routes. 
+#    type: 
+#      text -> textController
+#      file -> fileController
+
+Note:
+  name: 'note'
+  keys:
+  - title
+  - content
+  - category
+  searchable: [title, content]
+  type: text
+
+Link:
+  name: 'link'
+  keys:
+    - title
+    - content
+    - category
+  searchable: [title, content]
+  type: text
+
+Image:
+  name: 'image'
+  keys:
+    - title
+    - tags
+    - category
+    - path
+  searchable: [title, tags]
+  type: file

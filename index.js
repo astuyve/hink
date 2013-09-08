@@ -1,7 +1,6 @@
 var express = require('express')
   , config  = require('./config')
   , mongoose = require('mongoose')
-  , models  = require('./models.json')
   , endpoints = require('./lib/baseController').endpoints
   , config = require('./config');
 
@@ -34,7 +33,7 @@ app.get('/', function(req, res) {
     ep = []
     endpoints.forEach(function(name) {
       // string not object for displaying
-      ep.push(String(name))
+      ep.push(name)
     })
     res.end(JSON.stringify(ep))
   }
@@ -43,13 +42,16 @@ app.get('/', function(req, res) {
 var general_search = function(query) {
   // search all endpoints for query q
   var results = []
-  for (model in models) {
-    if (model === 'db') { continue }
-    console.log(model)
-    var m = mongoose.model(model)
+  for (k in models) {
+    obj = models[k]
+    var m = mongoose.model(k)
     var regex = new RegExp(query, 'i')  // ignore case
+    searchables = []
+    obj.searchable.forEach(function(key) {
+      searchables.append({key: regex})
+    })
 
-    m.find({ $or:[{ content: regex }, { title: regex }]}, function(err, docs) {
+    m.find({ $or: searchables }, function(err, docs) {
       docs.forEach(function(doc) {
         if (doc !== []) {
           results.push(doc)

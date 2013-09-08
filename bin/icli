@@ -1,0 +1,317 @@
+#!/usr/bin/env node
+// get these from somewhere else
+var port = 3000
+var base_url = 'http://localhost:' + port
+
+var request = require('request')
+var stdin = process.stdin
+var stdout = process.stdout
+
+stdin.setRawMode(true)
+stdin.setEncoding('ascii')
+stdin.resume()
+
+var utf8 = {
+  etx : '\u0003',
+  lf : '\u000A',
+  cr : '\u000D',
+  backspace : '\u0008',
+  tab : '\u0009',
+  space : '\u0020',
+  up : '\u001b[A',
+  down : '\u001b[B',
+  right : '\u001b[C',
+  left : '\u001b[D'
+}
+
+var autocomplete = getAutocompletion()
+var shell = getShell()
+shell.clearLinePrint('--  Hink CLI  --')
+shell.newLine()
+stdin.on('data', function(key) {
+  switch (key) {
+    case utf8.etx:
+      stdout.write('\n')
+      process.exit()
+
+    case utf8.tab:
+      var matches = autocomplete.matchesFromBuffer(shell.buffer)
+      shell.autocomplete(matches)
+
+      // space inserted if 1 match found
+      if (matches.length == 1)
+        autocomplete.refreshCaches(shell.buffer)
+      break
+
+    case utf8.backspace:
+      shell.deleteLastChar()
+      break
+
+    case utf8.lf:
+    case utf8.cr:
+      shell.execBuffer()
+      break
+
+    case utf8.up:
+      shell.upBufferHistory()
+      break
+
+    case utf8.down:
+      shell.downBufferHistory()
+      break
+
+    case utf8.left:
+    case utf8.right:
+      // could support editing buffer at cursor but I'm lazy
+      break
+
+    case utf8.space:
+      autocomplete.refreshCaches(shell.buffer)
+    default:
+      shell.addChar(key)
+  }
+})
+
+/* Executes buffer as a Hink cli command */
+function execHinkCommand(buffer) {
+  // this could be more robust
+  var sys = require('sys')
+  var exec = require('child_process').exec
+  var cmd = './cli ' + buffer
+  var child = exec(cmd, function (err, stdout, stderr) {
+    if (err)
+      shell.clearLinePrint(stderr)
+    else
+      shell.clearLinePrint(stdout)
+    shell.newLine()
+  })
+}
+
+
+/* Construct an object that will be the interactive shell */
+function getShell() {
+  var shell = {}
+  var prompt = 'hink> '
+  shell.buffer = ''
+
+  shell.newLine = function() {
+    this.buffer = ''
+    stdout.write('\n' + prompt)
+  }
+
+  shell.addChar = function(ch) {
+    this.buffer += ch
+    stdout.write(ch)
+  }
+
+  shell.deleteLastChar = function() {
+    var len = prompt.length + this.buffer.length
+    if (len > prompt.length) {
+      len--
+      stdout.cursorTo(len)
+      stdout.write(' ')
+      stdout.cursorTo(len)
+      this.buffer = this.buffer.substring(0, this.buffer.length - 1)
+    }
+  }
+
+  shell.print = function(string) {
+    stdout.write(string)
+  }
+
+  shell.clearLinePrint = function(string) {
+    stdout.clearLine()
+    stdout.cursorTo(0)
+    this.print(string)
+  }
+
+  /* Perform autocompletion for buffer with autocompletion matches */
+  shell.autocomplete = function(matches) {
+    if (!matches || matches.length == 0) return
+    var buffer = this.buffer
+
+    // if available, extract the partial word text used to match
+    var textMatch = this.buffer.match(/([\w]+)$/)
+    var text = ''
+    if (textMatch) {
+      text = textMatch[1]
+      buffer = this.buffer.substring(0, this.buffer.length-text.length)
+    }
+
+    if (matches.length == 1) {
+      // print the completed part of partial text to console
+      var textMatchRemainder = matches[0].substring(text.length)
+      stdout.write(textMatchRemainder + ' ')
+
+      buffer = buffer + matches[0] + ' '
+      this.buffer = buffer
+      return
+    } else {
+      // display autocompletion matches
+      stdout.write('\n')
+      printAutocompleteMatches(matches)
+      this.newLine()
+
+      // extrapolate partial text with shared characters between matches
+      var smallestMatch = matches.sort(function(w1, w2) {
+          return (w1.length > w2.length) })[0]
+      var isShared = true
+      var sharedText = ''
+      for (var i = 0; i < smallestMatch.length && isShared; i++) {
+        var c = smallestMatch[i]
+        for (var m in matches) {
+          if (matches[m][i] != c) {
+            isShared = false
+            break
+          }
+        }
+
+        if (isShared)
+          sharedText += c
+      }
+      buffer = buffer + sharedText
+      this.buffer = buffer
+      stdout.write(buffer)
+      return
+    }
+  }
+
+  shell.execBuffer = function execBuffer() {
+    if (this.buffer != '') {
+      execHinkCommand(this.buffer)
+      resetBuffer()
+      bufferHistory.unshift(this.buffer)
+    }
+
+    shell.newLine()
+  }
+
+  var historyItr = -1 // -1 indicates buffer was reset
+  var bufferHistory = []
+  shell.upBufferHistory = function upBufferHistory() {
+    if ((historyItr + 1) >= bufferHistory.length) return
+
+    // -1 indicates the current buffer must be added to history
+    if (historyItr == -1) {
+      bufferHistory.unshift(this.buffer)
+      historyItr = 0
+    }
+
+    historyItr++
+    this.buffer = bufferHistory[historyItr]
+    this.clearLinePrint(prompt + this.buffer)
+  }
+
+  shell.downBufferHistory = function downBufferHistory() {
+    if ((historyItr - 1) < 0) return
+
+    historyItr--
+    this.buffer = bufferHistory[historyItr]
+    this.clearLinePrint(prompt + this.buffer)
+  }
+
+  function resetBuffer() {
+    // removing lingering '' if still there from buffer scrolling
+    if (bufferHistory[0] == '')
+      bufferHistory.shift()
+    historyItr = -1
+  }
+
+  function printAutocompleteMatches(matches) {
+    matches.sort()
+    matches.forEach(function(word) {
+      stdout.write(word + '\t')
+    })
+  }
+
+  return shell
+}
+
+/* Construct an object that perform Hink autocompletion */
+function getAutocompletion() {
+  var autocomplete = {}
+  methodCache = ['create', 'list', 'search']
+  modelCache = []
+  categoryCache = []
+
+  /* Matches buffer string against appropiate cache returning the matches found
+   * Matches according to buffer format: <method> <model> <category> */
+  autocomplete.matchesFromBuffer = function matchesFromBuffer(buffer) {
+    var preMethodRegex = /^[\s]*$/
+    if (buffer.match(preMethodRegex))
+      return methodCache
+
+    var methodRegex = /^([\w]+)$/
+    var methodMatch = buffer.match(methodRegex)
+    if (methodMatch) {
+      var text = methodMatch[1]
+      return searchCacheForText(methodCache, text)
+    }
+
+    var preModelRegex = /^([\w]+)[\s]*$/
+    if (buffer.match(preModelRegex))
+      return modelCache
+
+    var modelRegex = /^([\w]+)[\s]+([\w]+)$/
+    var modelMatch = buffer.match(modelRegex)
+    if (modelMatch) {
+      var text = modelMatch[2]
+      return searchCacheForText(modelCache, text)
+    }
+
+    var preCategoryRegex = /^([\w]+)[\s]+([\w]+)[\s]*$/
+    if (buffer.match(preCategoryRegex))
+      return categoryCache
+
+    var categoryRegex = /^([\w]+)[\s]+([\w]+)[\s]+([\w]+)$/
+    var categoryMatch = buffer.match(categoryRegex)
+    if (categoryMatch) {
+      var text = categoryMatch[3]
+      return searchCacheForText(categoryCache, text)
+    }
+
+    return []
+  }
+
+  /* If enough of the buffer is specified, a request is performed
+   * to update its associated cache. */
+  autocomplete.refreshCaches = function refreshCaches(buffer) {
+    var preModelRegex = /^([\w]+)[\s]*$/
+    if (buffer.match(preModelRegex)) {
+      modelCacheRequest()
+    }
+
+    var preCategoryRegex = /^([\w]+)[\s]+([\w]+)[\s]*$/
+    var match = buffer.match(preCategoryRegex)
+    if (match) {
+      var model = match[2]
+      categoryCacheRequest(model)
+    }
+  }
+
+  function searchCacheForText(cache, text) {
+    return cache.filter(function(word) {
+      return (word.indexOf(text) == 0)
+    })
+  }
+
+  function modelCacheRequest() {
+    var url = base_url
+    modelCache = []
+    request.get(url, function(err, res, body){
+      if (!err)
+        modelCache = JSON.parse(body)
+    })
+  }
+
+  function categoryCacheRequest(model) {
+    var url = base_url + '/' + model
+    categoryCache = []
+    request.get(url, function(err, res, body){
+      if (!err)
+        categoryCache = JSON.parse(body)
+    })
+  }
+
+  return autocomplete
+}

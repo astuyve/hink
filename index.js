@@ -1,7 +1,7 @@
 var express = require('express')
   , config  = require('./config')
   , mongoose = require('mongoose')
-  , endpoints = require('./lib/baseController').endpoints
+  , endpoints = require('./src/baseController').endpoints
   , config = require('./config');
 
 //DB Connection
@@ -63,7 +63,7 @@ var general_search = function(query) {
 }
 
 // load controllers
-require('./lib/boot')(app, { verbose: !module.parent });
+require('./src/init')(app, { verbose: !module.parent });
 
 app.use(function(err, req, res, next){
   // treat as 404

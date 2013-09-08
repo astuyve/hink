@@ -4,7 +4,7 @@
 
 require('js-yaml')
 var doc = require('./models.yaml')
-exports.models = doc
+exports.manifest = doc
 
 exports.site = "localhost";
 exports.port = 3000;

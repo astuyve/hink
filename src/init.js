@@ -6,10 +6,10 @@ var express = require('express')
   , FileController = require('./fileController').FileController
 
 module.exports = function(parent, options){
-  models = config.models
-  for (var name in models) {
-    var obj = models[name]
-      , schema = new Schema({ })
+  manifest = config.manifest
+  for (var name in manifest) {
+    var obj = manifest[name]
+      , schema = new Schema({ any: Schema.Types.Mixed })
       , m = mongoose.model(name, schema) // register the collection
       , controller
     console.log('\n %s: %s', obj.name, obj.type);
@@ -22,30 +22,23 @@ module.exports = function(parent, options){
       default:
         controller = new TextController(m)
     }
-    console.log(controller)
     var app = express()
-      , rname = obj.name
-      , method
-      , path;
+      , path = '/' + obj.name
 
-    path = '/' + rname
     // cat_list
-    app['get'](path, controller['cat_list']);
+    app.get(path, controller.cat_list);
     // show
-    app['get'](path + '/:category/:id', controller['show'])
+    app.get(path + '/:category/:id', controller.show)
     // list
-    app['get'](path + '/:category/:id', controller['list'])
+    app.get(path + '/:category/:id', controller.list)
     // delete
-    app['get'](path + '/:category/:id/delete', controller['delete'])
+    app.get(path + '/:category/:id/delete', controller._delete)
     // update
-    app['put'](path + '/:category/:id', controller['update'])
+    app.put(path + '/:category/:id', controller.update)
     // create
-    app['post'](path + '/:category', controller['create'])
+    app.post(path + '/:category', controller.create)
     // search
-    app['get'](path + '/:category/search/:q', controller['search'])
-
-    //app[method](path, controller[key]);
-
+    app.get(path + '/:category/search/:q', controller.search)
   }
   // mount the app
   parent.use(app);

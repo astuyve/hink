@@ -2,22 +2,23 @@ var request = require('./support/http')
   , assert  = require('assert')
   , mongoose = require('mongoose')
   , config = require('./../config')
-  , models = require('./../models')
+  , app = require('../index')
+  , db = mongoose.connection
 
+  console.log(db)
 describe('api', function(){
   process.env.NODE_ENV = 'test'
-  app = require('../index')
-  var aNote = new models.Note({category: "foo", title: "foo", content: "bar"})
-    , aLink = new models.Link({category: "foo", title: "baz", content: "qaz"})
-    , anImage = new models.Image({
+  // create some collections
+  var aNote = db.collections.notes({category: "foo", title: "foo", content: "bar"})
+    , aLink = db.collections.links({category: "foo", title: "baz", content: "qaz"})
+    , anImage = db.collections.images({
           category: "foo"
         , title: "cat gif"
         , content: "a cat"})
 
   beforeEach(function(done){
-    models.Note.remove({}, function() {})
-    models.Link.remove({}, function() {})
-    models.Image.remove({}, function() {})
+    // remove all the collections
+    models.collections.remove({}, function() {})
     aNote.save(); aLink.save(); anImage.save();
     done()
   })

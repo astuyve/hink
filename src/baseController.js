@@ -1,18 +1,19 @@
 // Base Controller
 // for all other controllers to inherit from
+// defines:
+//   - cat_list
+//   - list
+//   - destroy
 
-// Establish a list of endpoints from the models
-var models = require('./../config').models
-  , Set = require('set')
-  , endpoints = []
+var Set = require('set')
 
-var BaseController = function(myModel) {
-  this.myModel = myModel
+var BaseController = function(myCollection) {
+  this.myCollection = myCollection
 }
 
 BaseController.prototype.cat_list = function(req, res, next) {
   // list all current categories
-  this.myModel.find({}).exec(function(err, doc) {
+  this.myCollection.find({}).exec(function(err, doc) {
     var set = new Set([])
     doc.forEach(function(item) {
       set.add(item.category)
@@ -21,28 +22,25 @@ BaseController.prototype.cat_list = function(req, res, next) {
   })
 }
 
-
 BaseController.prototype.list = function(req, res, next){
   var category = req.params.category
-  this.myModel.find({category: category}).exec(function(err, result) {
+  this.myCollection.find({category: category}).exec(function(err, result) {
     if (!err) {
-      res.end(JSON.stringify(result));
-    } else {
-      //TODO profeshnul error handling
-      res.end("UH OH!");
-    };
+      res.json(result)
+    }
+    //TODO profeshnul error handling
+    res.end("UH OH!");
   });
 }
 
-BaseController.prototype._delete = function(req, res, next){
-  this.myModel.remove({ _id: req.params.id }, function (err){
-    res.end("deleted")
+BaseController.prototype.destroy = function(req, res, next){
+  this.myCollection.remove({ _id: req.params.id }, function (err){
+    if (!err) {
+      res.end("deleted")
+    }
     //TODO error handling
+    res.end("something went wrong")
   })
 }
 
-for (var k in models) {
-  endpoints.push(models[k].name)
-}
-exports.endpoints = endpoints
 exports.BaseController = BaseController

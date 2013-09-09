@@ -26,13 +26,13 @@ module.exports = function(parent, options){
       , path = '/' + obj.name
 
     // cat_list
-    app.get(path, controller.cat_list);
+    app.get(path, controller.cat_list)
     // show
     app.get(path + '/:category/:id', controller.show)
     // list
     app.get(path + '/:category/:id', controller.list)
     // delete
-    app.get(path + '/:category/:id/delete', controller._delete)
+    app.del(path + '/:category/:id', controller.destroy)
     // update
     app.put(path + '/:category/:id', controller.update)
     // create

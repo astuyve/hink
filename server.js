@@ -7,6 +7,7 @@ var express = require('express')
 // DB Connection
 mongoose.connect('mongodb://localhost/' + config.dburi);
 db.on('error', console.error.bind(console, 'Mongoose: Database connection error:'));
+console.log(config.dburi)
 exports.db = db;
 
 var app = express()

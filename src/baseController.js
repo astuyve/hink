@@ -18,7 +18,7 @@ BaseController.prototype.cat_list = function(req, res, next) {
     doc.forEach(function(item) {
       set.add(item.category)
     })
-    res.end(JSON.stringify(set.get()));
+    res.json(set.get());
   })
 }
 

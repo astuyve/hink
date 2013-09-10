@@ -5,13 +5,14 @@ var express = require('express')
   , TextController = require('./textController').TextController
   , FileController = require('./fileController').FileController
 
-module.exports = function(parent, options){
+module.exports = function(parent){
   manifest = config.manifest
   for (var name in manifest) {
     var obj = manifest[name]
       , schema = new Schema({ any: Schema.Types.Mixed })
-      , m = mongoose.model(name, schema) // register the collection
       , controller
+    mongoose.model(name, schema) // register the collection
+    m = mongoose.model(name)
     console.log('\n %s: %s', obj.name, obj.type);
     console.log('   - registered ' + name)
     switch (obj.type) {
@@ -26,20 +27,20 @@ module.exports = function(parent, options){
       , path = '/' + obj.name
 
     // cat_list
-    app.get(path, controller.cat_list)
+    parent.get(path, controller.cat_list.bind(controller))
     // show
-    app.get(path + '/:category/:id', controller.show)
+    parent.get(path + '/:category/:id', controller.show.bind(controller))
     // list
-    app.get(path + '/:category/:id', controller.list)
+    parent.get(path + '/:category/:id', controller.list.bind(controller))
     // delete
-    app.del(path + '/:category/:id', controller.destroy)
+    parent.del(path + '/:category/:id', controller.destroy.bind(controller))
     // update
-    app.put(path + '/:category/:id', controller.update)
+    parent.put(path + '/:category/:id', controller.update.bind(controller))
     // create
-    app.post(path + '/:category', controller.create)
+    parent.post(path + '/:category', controller.create.bind(controller))
     // search
-    app.get(path + '/:category/search/:q', controller.search)
+    parent.get(path + '/:category/search/:q', controller.search.bind(controller))
   }
   // mount the app
   parent.use(app);
-};
+}

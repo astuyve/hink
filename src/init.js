@@ -5,32 +5,32 @@ var express = require('express')
   , TextController = require('./textController').TextController
   , FileController = require('./fileController').FileController
 
-module.exports = function(parent, db){
+module.exports = function(parent){
   manifest = config.manifest
   for (var name in manifest) {
     var obj = manifest[name]
-      , schema = new Schema({ any: Schema.Types.Mixed })
-      , controller
-      , m = db.model(name, schema) // register the collection
-    console.log('\n %s: %s', obj.name, obj.type);
-    console.log('   - registered ' + name)
+      , schema = new Schema({ }) //any: Schema.Types.Mixed })
+      , m = mongoose.model(name, schema) // register the collection
     switch (obj.type) {
       case 'text':
-        controller = new TextController(m)
+        var controller = new TextController(m)
       case 'file':
-        controller = new FileController(m)
+        var controller = new FileController(m)
       default:
         controller = new TextController(m)
     }
     var app = express()
       , path = '/' + obj.name
+    console.log('\n %s: %s', obj.name, obj.type);
+    console.log('   - registered ' + name)
 
+    // bind is here to get the myCollection instance from the *Controller
     // cat_list
     parent.get(path, controller.cat_list.bind(controller))
+    // list
+    parent.get(path + '/:category', controller.list.bind(controller))
     // show
     parent.get(path + '/:category/:id', controller.show.bind(controller))
-    // list
-    parent.get(path + '/:category/:id', controller.list.bind(controller))
     // delete
     parent.del(path + '/:category/:id', controller.destroy.bind(controller))
     // update

@@ -10,7 +10,7 @@ var TextController = function(myCollection) {
   this.myCollection = myCollection
 }
 
-TextController.prototype.cat_list = function(req, res, next) {
+TextController.prototype.cat_list = function(req, res) {
   // list all current categories
   this.myCollection.find({}, function(err, doc) {
     var set = new Set([])
@@ -21,7 +21,7 @@ TextController.prototype.cat_list = function(req, res, next) {
   })
 }
 
-TextController.prototype.list = function(req, res, next){
+TextController.prototype.list = function(req, res){
   var category = req.params.category
   this.myCollection.find({category: category}, function(err, result) {
     if (!err) {
@@ -31,7 +31,7 @@ TextController.prototype.list = function(req, res, next){
   });
 }
 
-TextController.prototype.destroy = function(req, res, next){
+TextController.prototype.destroy = function(req, res){
   this.myCollection.remove({ _id: req.params.id }, function (err){
     if (!err) {
       res.end("deleted")
@@ -40,7 +40,7 @@ TextController.prototype.destroy = function(req, res, next){
   })
 }
 
-TextController.prototype.create = function(req, res, next){
+TextController.prototype.create = function(req, res){
   // category should probably make a new mongo collection
   var title = req.body.title || 'Untitled';
   var content = req.body.content;
@@ -53,6 +53,7 @@ TextController.prototype.create = function(req, res, next){
                       , created_at: Date()
                       , title: title
                       , content: content });
+  console.log(aDoc)
   aDoc.save(function(err, result) {
     if (!err) {
       res.end('added!');
@@ -63,7 +64,7 @@ TextController.prototype.create = function(req, res, next){
   });
 }
 
-TextController.prototype.show = function(req, res, next){
+TextController.prototype.show = function(req, res){
   this.myCollection.findOne({ _id: req.params.id }, function (err, doc){
     if (!err) { 
       res.end(JSON.stringify(doc));
@@ -74,9 +75,8 @@ TextController.prototype.show = function(req, res, next){
   });
 }
 
-TextController.prototype.update = function(req, res, next){
+TextController.prototype.update = function(req, res){
   this.myCollection.findOne({ _id: req.params.id }, function (err, doc){
-    //XXX make this suck less
     var title = req.body.title
     var content = req.body.content
     if (title) {
@@ -89,7 +89,7 @@ TextController.prototype.update = function(req, res, next){
   });
 }
 
-TextController.prototype.search = function(req, res, next) {
+TextController.prototype.search = function(req, res) {
   var q = req.query.q
   console.log("search query: " + q)
   var regex = new RegExp(q,'i')

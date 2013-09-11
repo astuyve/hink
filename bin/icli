@@ -1,89 +1,206 @@
 #!/usr/bin/env node
-// get these from somewhere else
-var port = 3000
-var base_url = 'http://localhost:' + port
+var program = require('commander')
+var request  = require('request')
+  // Fill these in if using deployed Hink
+  , port     = 3000
+  , base_url = 'http://localhost:'+ port
+  , usage    = "usage: cli <method> <model> <category>\n\t" +
+                  "supplied methods\n\t- create\n\t- list\n\t- search"
 
-var request = require('request')
+program
+    .option('-i, --interactive', 'Interactive CLI')
+
+program.on('--help', function() {
+  console.log('  ' + usage)
+  console.log('');
+  console.log('  Examples:');
+  console.log('');
+  console.log('    create link google "http://www.google.com"');
+  console.log('    list note linux');
+  console.log('');
+})
+
+program.parse(process.argv)
+
+
 var stdin = process.stdin
 var stdout = process.stdout
+var hinkRequest = getHinkRequest()
 
-stdin.setRawMode(true)
-stdin.setEncoding('ascii')
-stdin.resume()
+if (program.interactive)
+  interactiveMain()
+else
+  main(process.argv)
 
-var utf8 = {
+
+/* Object to store hink request functions */
+function getHinkRequest() {
+  var hinkRequest = {}
+  hinkRequest.listModels = function(cb) {
+    var url = base_url
+    request.get(url, cb)
+  }
+
+  hinkRequest.listCategories = function(model, cb) {
+    var url = base_url + '/' + model
+    request.get(url, cb)
+  }
+
+  hinkRequest.create = function(model, category, title, content) {
+    var url = base_url + '/' + model + '/' + category
+    data = { title: title
+           , content: content }
+    request.post(url, {form: data})
+  }
+
+  hinkRequest.list = function(model, category, cb) {
+    var url = base_url + '/' + model + '/' + category
+    request.get(url, cb)
+  }
+
+  hinkRequest.search = function(model, category, text, cb) {
+    var url = base_url + '/' + model + '/' + category +
+              '/search/?q=' + text
+    request.get(url, cb)
+  }
+  return hinkRequest
+}
+
+function main(argv) {
+  var argc   = argv.length - 1  // wtf extra length batman?
+  , method   = argv[2]
+  , model    = argv[3]
+  , category = argv[4]
+  , optArg1  = argv[5] || null
+  , optArg2  = argv[6] || null
+
+  // arg logic
+  if (argc < 3) {
+    hinkRequest.listModels(
+      function(err, res, body) {
+        if (!err && res.statusCode == 200) {
+          cPrint("models available: " + body + '\n\n' + usage)
+        }
+      })
+    }
+
+  if (argc == 3) {
+    hinkRequest.listCategories(model,
+      function(err, res, body) {
+        if (!err && res.statusCode == 200) {
+            cPrint(body)
+        }
+      })
+  }
+
+  if (argc > 3) {
+    //CREATE
+    if (method == 'create') {
+      hinkRequest.create(model, category, optArg1, optArg2)
+    }
+
+    // LIST
+    if (method == 'list') {
+      hinkRequest.list(model, category,
+        function(err, res, body) {
+          if (!err && res.statusCode == 200) {
+            writeList(JSON.parse(body))
+          }
+        })
+    }
+
+    // SEARCH
+    if (method == 'search') {
+      hinkRequest.search(model, category, optArg1,
+        function(err, res, body) {
+          if (!err && res.statusCode == 200) {
+            writeList(JSON.parse(body))
+          }
+        })
+    }
+  }
+
+  function writeList (docs) {
+    // receive json list and print to stdout properly
+    if (!docs) { process.stdout.write('no results\n'); process.exit() }
+    content_types = ['url', 'content', 'path']
+
+    docs.forEach(function(doc) {
+      process.stdout.write(doc.title + '\n' + '\t- ' + doc.content + '\n')
+    })
+  }
+
+  function cPrint(str) {
+    process.stdout.write(str + '\n')
+  }
+}
+
+function interactiveMain() {
+  stdin.setRawMode(true)
+  stdin.setEncoding('ascii')
+  stdin.resume()
+
+  var utf8 = {
   etx : '\u0003',
   lf : '\u000A',
   cr : '\u000D',
   backspace : '\u0008',
+  asciiDel: '\u007F',
   tab : '\u0009',
   space : '\u0020',
   up : '\u001b[A',
   down : '\u001b[B',
   right : '\u001b[C',
   left : '\u001b[D'
-}
+  }
 
-var autocomplete = getAutocompletion()
-var shell = getShell()
-shell.clearLinePrint('--  Hink CLI  --')
-shell.newLine()
-stdin.on('data', function(key) {
+  var autocomplete = getAutocompletion()
+  var shell = getShell()
+  shell.clearLinePrint('--  Hink CLI  --')
+  shell.newLine()
+  stdin.on('data', function(key) {
   switch (key) {
     case utf8.etx:
-      stdout.write('\n')
-      process.exit()
+    stdout.write('\n')
+    process.exit()
 
     case utf8.tab:
-      var matches = autocomplete.matchesFromBuffer(shell.buffer)
-      shell.autocomplete(matches)
+    var matches = autocomplete.matchesFromBuffer(shell.buffer)
+    shell.autocomplete(matches)
 
-      // space inserted if 1 match found
-      if (matches.length == 1)
+    // space inserted if 1 match found
+    if (matches.length == 1)
         autocomplete.refreshCaches(shell.buffer)
-      break
+    break
 
+    case utf8.asciiDel:
     case utf8.backspace:
-      shell.deleteLastChar()
-      break
+    shell.deleteLastChar()
+    break
 
     case utf8.lf:
     case utf8.cr:
-      shell.execBuffer()
-      break
+    shell.execBuffer()
+    break
 
     case utf8.up:
-      shell.upBufferHistory()
-      break
+    shell.upBufferHistory()
+    break
 
     case utf8.down:
-      shell.downBufferHistory()
-      break
+    shell.downBufferHistory()
+    break
 
     case utf8.left:
     case utf8.right:
-      // could support editing buffer at cursor but I'm lazy
-      break
+    // could support editing buffer at cursor but I'm lazy
+    break
 
     case utf8.space:
-      autocomplete.refreshCaches(shell.buffer)
+    autocomplete.refreshCaches(shell.buffer)
     default:
-      shell.addChar(key)
+    shell.addChar(key)
   }
-})
-
-/* Executes buffer as a Hink cli command */
-function execHinkCommand(buffer) {
-  // this could be more robust
-  var sys = require('sys')
-  var exec = require('child_process').exec
-  var cmd = './cli ' + buffer
-  var child = exec(cmd, function (err, stdout, stderr) {
-    if (err)
-      shell.clearLinePrint(stderr)
-    else
-      shell.clearLinePrint(stdout)
-    shell.newLine()
   })
 }
 
@@ -177,7 +294,10 @@ function getShell() {
   }
 
   shell.execBuffer = function execBuffer() {
-    if (this.buffer != '') {
+    if (this.buffer == 'quit' || this.buffer == 'exit') {
+      stdout.write('\n')
+      process.exit()
+    } else if (this.buffer != '') {
       execHinkCommand(this.buffer)
       resetBuffer()
       bufferHistory.unshift(this.buffer)
@@ -221,6 +341,19 @@ function getShell() {
     matches.sort()
     matches.forEach(function(word) {
       stdout.write(word + '\t')
+    })
+  }
+
+  /* Executes buffer as a Hink cli command */
+  function execHinkCommand(buffer) {
+    var exec = require('child_process').exec
+    var cmd = process.argv[1] + ' ' + buffer
+    var child = exec(cmd, function (err, stdout, stderr) {
+      if (err)
+        shell.clearLinePrint(stderr)
+      else
+        shell.clearLinePrint(stdout)
+    shell.newLine()
     })
   }
 
@@ -296,21 +429,23 @@ function getAutocompletion() {
   }
 
   function modelCacheRequest() {
-    var url = base_url
     modelCache = []
-    request.get(url, function(err, res, body){
-      if (!err)
-        modelCache = JSON.parse(body)
-    })
+    hinkRequest.listModels(
+      function(err, res, body) {
+        if (!err && res.statusCode == 200) {
+          modelCache = JSON.parse(body)
+        }
+      })
   }
 
   function categoryCacheRequest(model) {
-    var url = base_url + '/' + model
     categoryCache = []
-    request.get(url, function(err, res, body){
-      if (!err)
-        categoryCache = JSON.parse(body)
-    })
+    hinkRequest.listCategories(model,
+      function(err, res, body) {
+        if (!err && res.statusCode == 200) {
+          categoryCache = JSON.parse(body)
+        }
+      })
   }
 
   return autocomplete

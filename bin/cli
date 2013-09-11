@@ -1,23 +1,21 @@
 #!/usr/bin/env node
 var program = require('commander')
-var request  = require('request')
+  , request = require('request')
+  , path    = require('path')
   // Fill these in if using deployed Hink
   , port     = 3000
   , base_url = 'http://localhost:'+ port
-  , usage    = "usage: cli <method> <model> <category>\n\t" +
-                  "supplied methods\n\t- create\n\t- list\n\t- search"
 
 program
     .option('-i, --interactive', 'Interactive CLI')
 
 program.on('--help', function() {
-  console.log('  ' + usage)
-  console.log('');
-  console.log('  Examples:');
-  console.log('');
-  console.log('    create link google "http://www.google.com"');
-  console.log('    list note linux');
-  console.log('');
+  console.log('  Usage: ./'+path.basename(process.argv[1]) +
+                ' <method> <model> <category>\n')
+  console.log("  supplied methods\n  - create\n  - list\n  - search\n")
+  console.log('  Examples:\n')
+  console.log('    create link derping "4chan" "http://4chan.org/b/"')
+  console.log('    list note linux\n')
 })
 
 program.parse(process.argv)
@@ -67,12 +65,12 @@ function getHinkRequest() {
 }
 
 function main(argv) {
-  var argc   = argv.length - 1  // wtf extra length batman?
-  , method   = argv[2]
-  , model    = argv[3]
-  , category = argv[4]
-  , optArg1  = argv[5] || null
-  , optArg2  = argv[6] || null
+  var argc     = argv.length - 1  // wtf extra length batman?
+    , method   = argv[2]
+    , model    = argv[3]
+    , category = argv[4]
+    , optArg1  = argv[5] || null
+    , optArg2  = argv[6] || null
 
   // arg logic
   if (argc < 3) {
@@ -123,7 +121,6 @@ function main(argv) {
   function writeList (docs) {
     // receive json list and print to stdout properly
     if (!docs) { process.stdout.write('no results\n'); process.exit() }
-    content_types = ['url', 'content', 'path']
 
     docs.forEach(function(doc) {
       process.stdout.write(doc.title + '\n' + '\t- ' + doc.content + '\n')

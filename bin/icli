@@ -58,7 +58,7 @@ function getHinkRequest() {
     request.get(url, cb)
   }
 
-  hinkRequest.search = function(category, text, cb) {
+  hinkRequest.search = function(model, category, text, cb) {
     var url = base_url + '/' + model + '/' + category +
               '/search/?q=' + text
     request.get(url, cb)
@@ -111,7 +111,7 @@ function main(argv) {
 
     // SEARCH
     if (method == 'search') {
-      hinkRequest.search(category, optArg1,
+      hinkRequest.search(model, category, optArg1,
         function(err, res, body) {
           if (!err && res.statusCode == 200) {
             writeList(JSON.parse(body))

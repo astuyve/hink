@@ -12,11 +12,10 @@ var TextController = function(myCollection) {
 
 TextController.prototype.cat_list = function(req, res, next) {
   // list all current categories
-  this.myCollection.find({}).exec(function(err, doc) {
+  this.myCollection.find({}, function(err, doc) {
     var set = new Set([])
     doc.forEach(function(item) {
-      console.log(item)
-      set.add(item.category)
+      set.add(item._doc.category)
     })
     res.json(set.get());
   })
@@ -24,11 +23,10 @@ TextController.prototype.cat_list = function(req, res, next) {
 
 TextController.prototype.list = function(req, res, next){
   var category = req.params.category
-  this.myCollection.find({category: category}).exec(function(err, result) {
+  this.myCollection.find({category: category}, function(err, result) {
     if (!err) {
       res.json(result)
     }
-    //TODO profeshnul error handling
     res.end("UH OH!");
   });
 }
@@ -38,11 +36,9 @@ TextController.prototype.destroy = function(req, res, next){
     if (!err) {
       res.end("deleted")
     }
-    //TODO error handling
     res.end("something went wrong")
   })
 }
-//TextController.prototype = new BaseController(this.myCollection)
 
 TextController.prototype.create = function(req, res, next){
   // category should probably make a new mongo collection
@@ -68,7 +64,7 @@ TextController.prototype.create = function(req, res, next){
 }
 
 TextController.prototype.show = function(req, res, next){
-  this.myCollection.findOne({ id: req.params.id }, function (err, doc){
+  this.myCollection.findOne({ _id: req.params.id }, function (err, doc){
     if (!err) { 
       res.end(JSON.stringify(doc));
     } else {
@@ -79,7 +75,7 @@ TextController.prototype.show = function(req, res, next){
 }
 
 TextController.prototype.update = function(req, res, next){
-  this.myCollection.findOne({ id: req.params.id }, function (err, doc){
+  this.myCollection.findOne({ _id: req.params.id }, function (err, doc){
     //XXX make this suck less
     var title = req.body.title
     var content = req.body.content

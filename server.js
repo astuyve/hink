@@ -24,7 +24,7 @@ require('./routes/index')(app, config)
 
 // generate and load controllers
 // register the models. Basically everything happens here
-require('./src/init')(app, { verbose: !module.parent });
+require('./src/init')(app, db);
 
 // errors
 app.use(function(err, req, res, next){

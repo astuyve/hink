@@ -5,14 +5,13 @@ var express = require('express')
   , TextController = require('./textController').TextController
   , FileController = require('./fileController').FileController
 
-module.exports = function(parent){
+module.exports = function(parent, db){
   manifest = config.manifest
   for (var name in manifest) {
     var obj = manifest[name]
       , schema = new Schema({ any: Schema.Types.Mixed })
       , controller
-    mongoose.model(name, schema) // register the collection
-    m = mongoose.model(name)
+      , m = db.model(name, schema) // register the collection
     console.log('\n %s: %s', obj.name, obj.type);
     console.log('   - registered ' + name)
     switch (obj.type) {

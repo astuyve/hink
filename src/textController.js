@@ -2,16 +2,45 @@
 // for textual data
 //
 // inherits: cat_list, list & delete
+var Set = require('set')
 
-var BaseController = require('./baseController').BaseController
+//var BaseController = require('./baseController').BaseController
 
-var TextController = function(myModel) {
-  this.myModel = myModel
+var TextController = function(myCollection) {
+  this.myCollection = myCollection
 }
 
-TextController.prototype = new BaseController()
+TextController.prototype.cat_list = function(req, res) {
+  // list all current categories
+  this.myCollection.find({}, function(err, doc) {
+    var set = new Set([])
+    doc.forEach(function(item) {
+      set.add(item._doc.category)
+    })
+    res.json(set.get());
+  })
+}
 
-TextController.prototype.create = function(req, res, next){
+TextController.prototype.list = function(req, res){
+  var category = req.params.category
+  this.myCollection.find({category: category}, function(err, result) {
+    if (!err) {
+      res.json(result)
+    }
+    res.end("UH OH!");
+  });
+}
+
+TextController.prototype.destroy = function(req, res){
+  this.myCollection.remove({ _id: req.params.id }, function (err){
+    if (!err) {
+      res.end("deleted")
+    }
+    res.end("something went wrong")
+  })
+}
+
+TextController.prototype.create = function(req, res){
   // category should probably make a new mongo collection
   var title = req.body.title || 'Untitled';
   var content = req.body.content;
@@ -19,12 +48,13 @@ TextController.prototype.create = function(req, res, next){
   if (!content) {
     res.end('must supply content\n')
   }
-  var aModel = new this.myModel({
+  var aDoc = new this.myCollection({
                         category: req.params.category
                       , created_at: Date()
                       , title: title
                       , content: content });
-  aModel.save(function(err, result) {
+  console.log(aDoc)
+  aDoc.save(function(err, result) {
     if (!err) {
       res.end('added!');
     } else {
@@ -34,8 +64,8 @@ TextController.prototype.create = function(req, res, next){
   });
 }
 
-TextController.prototype.show = function(req, res, next){
-  this.myModel.findOne({ id: req.params.id }, function (err, doc){
+TextController.prototype.show = function(req, res){
+  this.myCollection.findOne({ _id: req.params.id }, function (err, doc){
     if (!err) { 
       res.end(JSON.stringify(doc));
     } else {
@@ -45,9 +75,8 @@ TextController.prototype.show = function(req, res, next){
   });
 }
 
-TextController.prototype.update = function(req, res, next){
-  this.myModel.findOne({ id: req.params.id }, function (err, doc){
-    //XXX make this suck less
+TextController.prototype.update = function(req, res){
+  this.myCollection.findOne({ _id: req.params.id }, function (err, doc){
     var title = req.body.title
     var content = req.body.content
     if (title) {
@@ -60,12 +89,13 @@ TextController.prototype.update = function(req, res, next){
   });
 }
 
-TextController.prototype.search = function(req, res, next) {
+TextController.prototype.search = function(req, res) {
   var q = req.query.q
   console.log("search query: " + q)
   var regex = new RegExp(q,'i')
-  this.myModel.find( { $or:[{ content: regex }, { title: regex }]}, function(err, docs) {
-    res.end(JSON.stringify(docs))
+  this.myCollection
+    .find( { $or:[{ content: regex }, { title: regex }]}, function(err, docs) {
+      res.json(docs)
   })
 }
 

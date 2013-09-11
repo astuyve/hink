@@ -5,41 +5,41 @@ var express = require('express')
   , TextController = require('./textController').TextController
   , FileController = require('./fileController').FileController
 
-module.exports = function(parent, options){
+module.exports = function(parent){
   manifest = config.manifest
   for (var name in manifest) {
     var obj = manifest[name]
-      , schema = new Schema({ any: Schema.Types.Mixed })
+      , schema = new Schema({ }) //any: Schema.Types.Mixed })
       , m = mongoose.model(name, schema) // register the collection
-      , controller
-    console.log('\n %s: %s', obj.name, obj.type);
-    console.log('   - registered ' + name)
     switch (obj.type) {
       case 'text':
-        controller = new TextController(m)
+        var controller = new TextController(m)
       case 'file':
-        controller = new FileController(m)
+        var controller = new FileController(m)
       default:
         controller = new TextController(m)
     }
     var app = express()
       , path = '/' + obj.name
+    console.log('\n %s: %s', obj.name, obj.type);
+    console.log('   - registered ' + name)
 
+    // bind is here to get the myCollection instance from the *Controller
     // cat_list
-    app.get(path, controller.cat_list)
-    // show
-    app.get(path + '/:category/:id', controller.show)
+    parent.get(path, controller.cat_list.bind(controller))
     // list
-    app.get(path + '/:category/:id', controller.list)
+    parent.get(path + '/:category', controller.list.bind(controller))
+    // show
+    parent.get(path + '/:category/:id', controller.show.bind(controller))
     // delete
-    app.del(path + '/:category/:id', controller.destroy)
+    parent.del(path + '/:category/:id', controller.destroy.bind(controller))
     // update
-    app.put(path + '/:category/:id', controller.update)
+    parent.put(path + '/:category/:id', controller.update.bind(controller))
     // create
-    app.post(path + '/:category', controller.create)
+    parent.post(path + '/:category', controller.create.bind(controller))
     // search
-    app.get(path + '/:category/search/:q', controller.search)
+    parent.get(path + '/:category/search/:q', controller.search.bind(controller))
   }
   // mount the app
   parent.use(app);
-};
+}

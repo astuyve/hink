@@ -7,7 +7,6 @@ var express = require('express')
 // DB Connection
 mongoose.connect('mongodb://localhost/' + config.dburi);
 db.on('error', console.error.bind(console, 'Mongoose: Database connection error:'));
-exports.db = db;
 
 var app = express()
 
@@ -23,7 +22,7 @@ require('./routes/index')(app, config)
 
 // generate and load controllers
 // register the models. Basically everything happens here
-require('./src/init')(app, { verbose: !module.parent });
+require('./src/init')(app);
 
 // errors
 app.use(function(err, req, res, next){

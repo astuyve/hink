@@ -63,8 +63,12 @@ TextController.prototype.update = function(req, res, next){
 TextController.prototype.search = function(req, res, next) {
   var q = req.params.query
   var regex = new RegExp(q,'i')
-  this.myModel.find( { $or:[{ content: regex }, { title: regex }]}, function(err, docs) {
-    res.json(docs)
+  this.myModel.find( { content: regex }, function(err, docs) {
+    console.log(docs)
+    this.myModel.find( { title: regex }, function(err, docs2) {
+      console.log(docs2)
+      res.json(docs + docs2)
+    })
   })
 }
 

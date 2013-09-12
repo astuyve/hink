@@ -77,7 +77,7 @@ function main(argv) {
     hinkRequest.listModels(
       function(err, res, body) {
         if (!err && res.statusCode == 200) {
-          cPrint("models available: " + body + '\n\n' + usage)
+          cPrint("models available: " + body + '\n')
         }
       })
     }

@@ -3,7 +3,7 @@
 var mongoose = require('mongoose')
   , db = mongoose.connection
   , Link = db.model('Link')
-  , TextController = require('./../../lib/textController').TextController
+  , TextController = require('./../../src/textController').TextController
 
 var control = new TextController(Link)
 

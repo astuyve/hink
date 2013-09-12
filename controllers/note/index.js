@@ -1,9 +1,8 @@
 // Notes Controller
 
 var mongoose = require('mongoose')
-  , db = mongoose.connection
-  , Note = db.model('Note')
-  , TextController = require('./../../lib/textController').TextController
+  , Note = mongoose.model('Note')
+  , TextController = require('./../../src/textController').TextController
 
 var control = new TextController(Note)
 

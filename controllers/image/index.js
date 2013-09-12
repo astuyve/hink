@@ -3,9 +3,9 @@
 var mongoose = require('mongoose')
   , db = mongoose.connection
   , Image = db.model('Note')
-  , TextController = require('./../../lib/textController').TextController
+  , FileController = require('./../../src/fileController').FileController
 
-var control = new TextController(Image)
+var control = new FileController(Image)
 
 exports.cat_list = control.cat_list.bind(control)
 

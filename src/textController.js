@@ -13,8 +13,8 @@ TextController.prototype = new BaseController()
 
 TextController.prototype.create = function(req, res, next){
   // category should probably make a new mongo collection
-  var title = req.body.title || 'Untitled';
-  var content = req.body.content;
+  var title = req.body.title || 'Untitled'
+  var content = req.body.content
 
   if (!content) {
     res.end('must supply content\n')
@@ -23,26 +23,26 @@ TextController.prototype.create = function(req, res, next){
                         category: req.params.category
                       , created_at: Date()
                       , title: title
-                      , content: content });
+                      , content: content })
   aModel.save(function(err, result) {
     if (!err) {
-      res.end('added!');
+      res.end('added!')
     } else {
       //TODO error handling
-      res.end('not added!');
+      res.end('not added!')
     }
-  });
+  })
 }
 
 TextController.prototype.show = function(req, res, next){
   this.myModel.findOne({ id: req.params.id }, function (err, doc){
     if (!err) { 
-      res.end(JSON.stringify(doc));
+      res.json(doc)
     } else {
       //TODO error handling
-      res.end("nothin'!");
-    };
-  });
+      res.end("nothin'!")
+    }
+  })
 }
 
 TextController.prototype.update = function(req, res, next){
@@ -56,16 +56,15 @@ TextController.prototype.update = function(req, res, next){
     if (content) {
       doc.content = content
     }
-    doc.save();
-  });
+    doc.save()
+  })
 }
 
 TextController.prototype.search = function(req, res, next) {
-  var q = req.query.q
-  console.log("search query: " + q)
+  var q = req.params.query
   var regex = new RegExp(q,'i')
   this.myModel.find( { $or:[{ content: regex }, { title: regex }]}, function(err, docs) {
-    res.end(JSON.stringify(docs))
+    res.json(docs)
   })
 }
 

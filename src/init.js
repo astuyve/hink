@@ -33,8 +33,8 @@ module.exports = function(parent, options){
           path = '/' + name + '/:category';
           break;
         case 'delete':
-          method = 'get';
-          path = '/' + name + '/:category' + '/:id/delete';
+          method = 'del';
+          path = '/' + name + '/:category' + '/:id';
           break;
         case 'update':
           method = 'put';
@@ -46,7 +46,7 @@ module.exports = function(parent, options){
           break;
         case 'search':
           method = 'get';
-          path = '/' + name + '/:category' + '/search/:q';
+          path = '/' + name + '/:category' + '/search/:query?';
           break;
         default:
           throw new Error('unrecognized route: ' + name + '.' + key);

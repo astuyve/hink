@@ -17,7 +17,7 @@ BaseController.prototype.cat_list = function(req, res, next) {
     doc.forEach(function(item) {
       set.add(item.category)
     })
-    res.end(JSON.stringify(set.get()));
+    res.json(set.get())
   })
 }
 
@@ -26,12 +26,12 @@ BaseController.prototype.list = function(req, res, next){
   var category = req.params.category
   this.myModel.find({category: category}).exec(function(err, result) {
     if (!err) {
-      res.end(JSON.stringify(result));
+      res.json(result)
     } else {
       //TODO profeshnul error handling
-      res.end("UH OH!");
-    };
-  });
+      res.end("UH OH!")
+    }
+  })
 }
 
 BaseController.prototype._delete = function(req, res, next){

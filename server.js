@@ -2,7 +2,7 @@ var express = require('express')
   , config  = require('./config')
   , mongoose = require('mongoose')
   , models  = require('./models')
-  , endpoints = require('./lib/baseController').endpoints
+  , endpoints = require('./src/baseController').endpoints
 
 
 var app = module.exports = express()
@@ -18,28 +18,31 @@ app.use(express.bodyParser(
 
 //pull this query logic out from index.js
 app.get('/', function(req, res) {
-  if (req.query.q) {
-    results = general_search(req.query.q)
-    res.end(JSON.stringify(results))
-  } else {
-    ep = []
-    endpoints.forEach(function(name) {
-      // string not object for displaying
-      ep.push(String(name))
-    })
-    res.end(JSON.stringify(ep))
+  ep = []
+  endpoints.forEach(function(name) {
+    // string not object for displaying
+    ep.push(String(name))
+  })
+  res.end(JSON.stringify(ep))
+})
+
+// global search
+// The scope of this is fucked
+app.get('/search/:query?', function(req, res) {
+  var query = req.params.query
+  result = generalSearch(query)
+  if (result) {
+    res.json(result)
   }
 })
 
-var general_search = function(query) {
-  // search all endpoints for query q
+function generalSearch(query) {
   var results = []
   for (model in models) {
     if (model === 'db') { continue }
     console.log(model)
     var m = mongoose.model(model)
     var regex = new RegExp(query, 'i')  // ignore case
-
     m.find({ $or:[{ content: regex }, { title: regex }]}, function(err, docs) {
       docs.forEach(function(doc) {
         if (doc !== []) {
@@ -52,7 +55,7 @@ var general_search = function(query) {
 }
 
 // load controllers
-require('./lib/boot')(app, { verbose: !module.parent });
+require('./src/init')(app, { verbose: !module.parent });
 
 app.use(function(err, req, res, next){
   // treat as 404

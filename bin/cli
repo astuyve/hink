@@ -1,79 +1,449 @@
 #!/usr/bin/env node
-
-var request  = require('request')
+var program = require('commander')
+  , request = require('request')
+  , path    = require('path')
   // Fill these in if using deployed Hink
   , port     = 3000
-  , base_url = 'localhost:'+ port
-  , argc     = process.argv.length - 1  // wtf extra length batman?
-  , method   = process.argv[2]
-  , model    = process.argv[3]
-  , category = process.argv[4]
-  , optArg1  = process.argv[5] || null
-  , optArg2  = process.argv[6] || null
-  , usage    = "usage: cli <method> <model> <category>\n\t" +
-                  "supplied methods\n\t- create\n\t- list\n\t- search"
+  , base_url = 'http://localhost:'+ port
+
+program
+    .option('-i, --interactive', 'Interactive CLI')
+
+program.on('--help', function() {
+  console.log('  Usage: ./'+path.basename(process.argv[1]) +
+                ' <method> <model> <category>\n')
+  console.log("  supplied methods\n  - create\n  - list\n  - search\n")
+  console.log('  Examples:\n')
+  console.log('    create link derping "4chan" "http://4chan.org/b/"')
+  console.log('    list note linux\n')
+})
+
+program.parse(process.argv)
 
 
-// arg logic
-if (argc < 3) {
-  request.get('http://' + base_url, function(err, res, body) {
-    cPrint("models available: " + body + '\n\n' + usage)
-    process.exit()
-  })
-}
+var stdin = process.stdin
+var stdout = process.stdout
+var hinkRequest = getHinkRequest()
 
-url = 'http://' + base_url+'/'+model  // initial value of the url
-if (argc === 3) {
-  // CAT_LIST - list of categories
-  request.get(url, function(err, res, body) {
-    if (!err && res.statusCode == 200) {
-      cPrint(body)
-    }
-  })
-}
-if (argc > 3) {
-  //
-  url = url + '/' + category
+if (program.interactive)
+  interactiveMain()
+else
+  main(process.argv)
 
-  //CREATE
-  if (method == 'create') {
-    data = { title: optArg1
-           , content: optArg2 }
+
+/* Object to store hink request functions */
+function getHinkRequest() {
+  var hinkRequest = {}
+  hinkRequest.listModels = function(cb) {
+    var url = base_url
+    request.get(url, cb)
+  }
+
+  hinkRequest.listCategories = function(model, cb) {
+    var url = base_url + '/' + model
+    request.get(url, cb)
+  }
+
+  hinkRequest.create = function(model, category, title, content) {
+    var url = base_url + '/' + model + '/' + category
+    data = { title: title
+           , content: content }
     request.post(url, {form: data})
   }
 
+  hinkRequest.list = function(model, category, cb) {
+    var url = base_url + '/' + model + '/' + category
+    request.get(url, cb)
+  }
 
-  // LIST
-  if (method == 'list') {
-    request.get(url, function(err, res, body) {
-      if (!err && res.statusCode == 200) {
-        docs = JSON.parse(body)
-        writeList(docs)
-      }
+  hinkRequest.search = function(model, category, text, cb) {
+    var url = base_url + '/' + model + '/' + category +
+              '/search/?q=' + text
+    request.get(url, cb)
+  }
+  return hinkRequest
+}
+
+function main(argv) {
+  var argc     = argv.length - 1  // wtf extra length batman?
+    , method   = argv[2]
+    , model    = argv[3]
+    , category = argv[4]
+    , optArg1  = argv[5] || null
+    , optArg2  = argv[6] || null
+
+  // arg logic
+  if (argc < 3) {
+    hinkRequest.listModels(
+      function(err, res, body) {
+        if (!err && res.statusCode == 200) {
+          cPrint("models available: " + body + '\n\n' + usage)
+        }
+      })
+    }
+
+  if (argc == 3) {
+    hinkRequest.listCategories(model,
+      function(err, res, body) {
+        if (!err && res.statusCode == 200) {
+            cPrint(body)
+        }
+      })
+  }
+
+  if (argc > 3) {
+    //CREATE
+    if (method == 'create') {
+      hinkRequest.create(model, category, optArg1, optArg2)
+    }
+
+    // LIST
+    if (method == 'list') {
+      hinkRequest.list(model, category,
+        function(err, res, body) {
+          if (!err && res.statusCode == 200) {
+            writeList(JSON.parse(body))
+          }
+        })
+    }
+
+    // SEARCH
+    if (method == 'search') {
+      hinkRequest.search(model, category, optArg1,
+        function(err, res, body) {
+          if (!err && res.statusCode == 200) {
+            writeList(JSON.parse(body))
+          }
+        })
+    }
+  }
+
+  function writeList (docs) {
+    // receive json list and print to stdout properly
+    if (!docs) { process.stdout.write('no results\n'); process.exit() }
+
+    docs.forEach(function(doc) {
+      process.stdout.write(doc.title + '\n' + '\t- ' + doc.content + '\n')
     })
   }
-  // SEARCH
-  if (method == 'search') {
-    url = url + '/search/'+optArg1
-    request.get(url, function(err, res, body) {
-      if (!err && res.statusCode == 200) {
-        docs = JSON.parse(body)
-        writeList(docs)
-      }
-    })
+
+  function cPrint(str) {
+    process.stdout.write(str + '\n')
   }
 }
 
+function interactiveMain() {
+  stdin.setRawMode(true)
+  stdin.setEncoding('ascii')
+  stdin.resume()
 
-var writeList = function(docs) {
-  // receive json list and print to stdout properly
-  if (!docs) { process.stdout.write('no results\n'); process.exit() }
-  content_types = ['url', 'content', 'path']
+  var utf8 = {
+  etx : '\u0003',
+  lf : '\u000A',
+  cr : '\u000D',
+  backspace : '\u0008',
+  asciiDel: '\u007F',
+  tab : '\u0009',
+  space : '\u0020',
+  up : '\u001b[A',
+  down : '\u001b[B',
+  right : '\u001b[C',
+  left : '\u001b[D'
+  }
 
-  docs.forEach(function(doc) {
-    process.stdout.write(doc.title + '\n' + '\t- ' + doc.content + '\n')
+  var autocomplete = getAutocompletion()
+  var shell = getShell()
+  shell.clearLinePrint('--  Hink CLI  --')
+  shell.newLine()
+  stdin.on('data', function(key) {
+  switch (key) {
+    case utf8.etx:
+    stdout.write('\n')
+    process.exit()
+
+    case utf8.tab:
+    var matches = autocomplete.matchesFromBuffer(shell.buffer)
+    shell.autocomplete(matches)
+
+    // space inserted if 1 match found
+    if (matches.length == 1)
+        autocomplete.refreshCaches(shell.buffer)
+    break
+
+    case utf8.asciiDel:
+    case utf8.backspace:
+    shell.deleteLastChar()
+    break
+
+    case utf8.lf:
+    case utf8.cr:
+    shell.execBuffer()
+    break
+
+    case utf8.up:
+    shell.upBufferHistory()
+    break
+
+    case utf8.down:
+    shell.downBufferHistory()
+    break
+
+    case utf8.left:
+    case utf8.right:
+    // could support editing buffer at cursor but I'm lazy
+    break
+
+    case utf8.space:
+    autocomplete.refreshCaches(shell.buffer)
+    default:
+    shell.addChar(key)
+  }
   })
 }
-var cPrint = function(str) {
-  process.stdout.write(str + '\n')
+
+
+/* Construct an object that will be the interactive shell */
+function getShell() {
+  var shell = {}
+  var prompt = 'hink> '
+  shell.buffer = ''
+
+  shell.newLine = function() {
+    this.buffer = ''
+    stdout.write('\n' + prompt)
+  }
+
+  shell.addChar = function(ch) {
+    this.buffer += ch
+    stdout.write(ch)
+  }
+
+  shell.deleteLastChar = function() {
+    var len = prompt.length + this.buffer.length
+    if (len > prompt.length) {
+      len--
+      stdout.cursorTo(len)
+      stdout.write(' ')
+      stdout.cursorTo(len)
+      this.buffer = this.buffer.substring(0, this.buffer.length - 1)
+    }
+  }
+
+  shell.print = function(string) {
+    stdout.write(string)
+  }
+
+  shell.clearLinePrint = function(string) {
+    stdout.clearLine()
+    stdout.cursorTo(0)
+    this.print(string)
+  }
+
+  /* Perform autocompletion for buffer with autocompletion matches */
+  shell.autocomplete = function(matches) {
+    if (!matches || matches.length == 0) return
+    var buffer = this.buffer
+
+    // if available, extract the partial word text used to match
+    var textMatch = this.buffer.match(/([\w]+)$/)
+    var text = ''
+    if (textMatch) {
+      text = textMatch[1]
+      buffer = this.buffer.substring(0, this.buffer.length-text.length)
+    }
+
+    if (matches.length == 1) {
+      // print the completed part of partial text to console
+      var textMatchRemainder = matches[0].substring(text.length)
+      stdout.write(textMatchRemainder + ' ')
+
+      buffer = buffer + matches[0] + ' '
+      this.buffer = buffer
+      return
+    } else {
+      // display autocompletion matches
+      stdout.write('\n')
+      printAutocompleteMatches(matches)
+      this.newLine()
+
+      // extrapolate partial text with shared characters between matches
+      var smallestMatch = matches.sort(function(w1, w2) {
+          return (w1.length > w2.length) })[0]
+      var isShared = true
+      var sharedText = ''
+      for (var i = 0; i < smallestMatch.length && isShared; i++) {
+        var c = smallestMatch[i]
+        for (var m in matches) {
+          if (matches[m][i] != c) {
+            isShared = false
+            break
+          }
+        }
+
+        if (isShared)
+          sharedText += c
+      }
+      buffer = buffer + sharedText
+      this.buffer = buffer
+      stdout.write(buffer)
+      return
+    }
+  }
+
+  shell.execBuffer = function execBuffer() {
+    if (this.buffer == 'quit' || this.buffer == 'exit') {
+      stdout.write('\n')
+      process.exit()
+    } else if (this.buffer != '') {
+      execHinkCommand(this.buffer)
+      resetBuffer()
+      bufferHistory.unshift(this.buffer)
+    }
+
+    shell.newLine()
+  }
+
+  var historyItr = -1 // -1 indicates buffer was reset
+  var bufferHistory = []
+  shell.upBufferHistory = function upBufferHistory() {
+    if ((historyItr + 1) >= bufferHistory.length) return
+
+    // -1 indicates the current buffer must be added to history
+    if (historyItr == -1) {
+      bufferHistory.unshift(this.buffer)
+      historyItr = 0
+    }
+
+    historyItr++
+    this.buffer = bufferHistory[historyItr]
+    this.clearLinePrint(prompt + this.buffer)
+  }
+
+  shell.downBufferHistory = function downBufferHistory() {
+    if ((historyItr - 1) < 0) return
+
+    historyItr--
+    this.buffer = bufferHistory[historyItr]
+    this.clearLinePrint(prompt + this.buffer)
+  }
+
+  function resetBuffer() {
+    // removing lingering '' if still there from buffer scrolling
+    if (bufferHistory[0] == '')
+      bufferHistory.shift()
+    historyItr = -1
+  }
+
+  function printAutocompleteMatches(matches) {
+    matches.sort()
+    matches.forEach(function(word) {
+      stdout.write(word + '\t')
+    })
+  }
+
+  /* Executes buffer as a Hink cli command */
+  function execHinkCommand(buffer) {
+    var exec = require('child_process').exec
+    var cmd = process.argv[1] + ' ' + buffer
+    var child = exec(cmd, function (err, stdout, stderr) {
+      if (err)
+        shell.clearLinePrint(stderr)
+      else
+        shell.clearLinePrint(stdout)
+    shell.newLine()
+    })
+  }
+
+  return shell
+}
+
+/* Construct an object that perform Hink autocompletion */
+function getAutocompletion() {
+  var autocomplete = {}
+  methodCache = ['create', 'list', 'search']
+  modelCache = []
+  categoryCache = []
+
+  /* Matches buffer string against appropiate cache returning the matches found
+   * Matches according to buffer format: <method> <model> <category> */
+  autocomplete.matchesFromBuffer = function matchesFromBuffer(buffer) {
+    var preMethodRegex = /^[\s]*$/
+    if (buffer.match(preMethodRegex))
+      return methodCache
+
+    var methodRegex = /^([\w]+)$/
+    var methodMatch = buffer.match(methodRegex)
+    if (methodMatch) {
+      var text = methodMatch[1]
+      return searchCacheForText(methodCache, text)
+    }
+
+    var preModelRegex = /^([\w]+)[\s]*$/
+    if (buffer.match(preModelRegex))
+      return modelCache
+
+    var modelRegex = /^([\w]+)[\s]+([\w]+)$/
+    var modelMatch = buffer.match(modelRegex)
+    if (modelMatch) {
+      var text = modelMatch[2]
+      return searchCacheForText(modelCache, text)
+    }
+
+    var preCategoryRegex = /^([\w]+)[\s]+([\w]+)[\s]*$/
+    if (buffer.match(preCategoryRegex))
+      return categoryCache
+
+    var categoryRegex = /^([\w]+)[\s]+([\w]+)[\s]+([\w]+)$/
+    var categoryMatch = buffer.match(categoryRegex)
+    if (categoryMatch) {
+      var text = categoryMatch[3]
+      return searchCacheForText(categoryCache, text)
+    }
+
+    return []
+  }
+
+  /* If enough of the buffer is specified, a request is performed
+   * to update its associated cache. */
+  autocomplete.refreshCaches = function refreshCaches(buffer) {
+    var preModelRegex = /^([\w]+)[\s]*$/
+    if (buffer.match(preModelRegex)) {
+      modelCacheRequest()
+    }
+
+    var preCategoryRegex = /^([\w]+)[\s]+([\w]+)[\s]*$/
+    var match = buffer.match(preCategoryRegex)
+    if (match) {
+      var model = match[2]
+      categoryCacheRequest(model)
+    }
+  }
+
+  function searchCacheForText(cache, text) {
+    return cache.filter(function(word) {
+      return (word.indexOf(text) == 0)
+    })
+  }
+
+  function modelCacheRequest() {
+    modelCache = []
+    hinkRequest.listModels(
+      function(err, res, body) {
+        if (!err && res.statusCode == 200) {
+          modelCache = JSON.parse(body)
+        }
+      })
+  }
+
+  function categoryCacheRequest(model) {
+    categoryCache = []
+    hinkRequest.listCategories(model,
+      function(err, res, body) {
+        if (!err && res.statusCode == 200) {
+          categoryCache = JSON.parse(body)
+        }
+      })
+  }
+
+  return autocomplete
 }

@@ -90,7 +90,7 @@ TextController.prototype.update = function(req, res){
 }
 
 TextController.prototype.search = function(req, res) {
-  var q = req.query.q
+  var q = req.params.query
   console.log("search query: " + q)
   var regex = new RegExp(q,'i')
   this.myCollection

@@ -2,7 +2,7 @@
 
 var request  = require('request')
   // Fill these in if using deployed Hink
-  , port     = 3000
+  , port     = 8080
   , base_url = 'localhost:'+ port
   , argc     = process.argv.length - 1  // wtf extra length batman?
   , method   = process.argv[2]
@@ -54,7 +54,7 @@ if (argc > 3) {
   }
   // SEARCH
   if (method == 'search') {
-    url = url + '/search/?q='+optArg1
+    url = url + '/search/'+optArg1
     console.log(url)
     request.get(url, function(err, res, body) {
       if (!err && res.statusCode == 200) {

@@ -9,7 +9,10 @@ module.exports = function(parent){
   manifest = config.manifest
   for (var name in manifest) {
     var obj = manifest[name]
-      , schema = new Schema({ }) //any: Schema.Types.Mixed })
+      // this needs to be initialized from obj.keys
+      , schema = new Schema({ category: String
+                            , title: String
+                            , content: String })
       , m = mongoose.model(name, schema) // register the collection
     switch (obj.type) {
       case 'text':
@@ -38,7 +41,7 @@ module.exports = function(parent){
     // create
     parent.post(path + '/:category', controller.create.bind(controller))
     // search
-    parent.get(path + '/:category/search/:q', controller.search.bind(controller))
+    parent.get(path + '/:category/search/:query?', controller.search.bind(controller))
   }
   // mount the app
   parent.use(app);

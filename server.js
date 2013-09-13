@@ -1,29 +1,33 @@
 var express = require('express')
   , config  = require('./config')
   , mongoose = require('mongoose')
+  , db = mongoose.connection
 
-var app = module.exports = express()
+// DB Connection
+mongoose.connect('mongodb://localhost/' + config.dburi);
+db.on('error', console.error.bind(console, 'Mongoose: Database connection error:'));
+
+var app = express()
 
 app.use(express.static(__dirname + '/public'));
-app.use(express.cookieParser('some secret here'));
-app.use(express.session());
 app.use(express.methodOverride());
-app.use(express.bodyParser(
-      { keepExtensions: true
-      , uploadDir: __dirname + "public/uploads"
-      }));
+app.use(express.bodyParser({
+      uploadDir: __dirname + "public/uploads"
+    , keepExtensions: true
+    }));
 
+// index route
 require('./routes/index')(app, config)
 
-// load controllers
-require('./src/init')(app, { verbose: !module.parent })
+// generate and load controllers
+// register the models. Basically everything happens here
+require('./src/init')(app);
 
+// errors
 app.use(function(err, req, res, next){
   // treat as 404
   if (~err.message.indexOf('not found')) return next();
-  // log it
   console.error(err.stack);
-  // error page
   res.status(500)
 });
 
@@ -32,4 +36,10 @@ app.use(function(req, res, next){
   res.status(404)
 });
 
-app.listen(config.port);
+// listen port
+var port = process.env.PORT || 3000
+app.listen(port);
+console.log("\napp listening on port " + port)
+
+// expose the app
+exports = module.exports = app

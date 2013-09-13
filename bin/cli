@@ -123,7 +123,7 @@ function main(argv) {
     if (!docs) { process.stdout.write('no results\n'); process.exit() }
 
     docs.forEach(function(doc) {
-      process.stdout.write(doc.title + '\n' + '\t- ' + doc.content + '\n')
+      process.stdout.write(doc.title + '\n' + '\t- ' + doc.content + '\n\n')
     })
   }
 

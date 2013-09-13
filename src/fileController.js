@@ -36,4 +36,3 @@ FileController.prototype.create = function(req, res, next) {
 }
 
 exports.FileController = FileController
-

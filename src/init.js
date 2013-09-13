@@ -1,63 +1,48 @@
 var express = require('express')
-  , fs = require('fs')
-  , config = require('../config');
+  , config = require('../config')
+  , mongoose = require('mongoose')
+  , Schema = mongoose.Schema
+  , TextController = require('./textController').TextController
+  , FileController = require('./fileController').FileController
 
-module.exports = function(parent, options){
-  var verbose = config.verbose;
-  fs.readdirSync(__dirname + '/../controllers').forEach(function(name){
-    verbose && console.log('\n %s:', name);
-    var obj = require('./../controllers/' + name)
-      , name = obj.name || name
-      , prefix = obj.prefix || ''
-      , app = express()
-      , method
-      , path;
-
-    // generate routes based
-    // on the exported methods
-    for (var key in obj) {
-      // "reserved" exports
-      if (~['name', 'prefix', 'before'].indexOf(key)) continue;
-      // route exports
-      switch (key) {
-        case 'cat_list':
-          method = 'get'
-          path = '/' + name
-          break;
-        case 'show':
-          method = 'get'
-          path = '/' + name + '/:category' + '/:id';
-          break;
-        case 'list':
-          method = 'get'
-          path = '/' + name + '/:category';
-          break;
-        case 'delete':
-          method = 'del';
-          path = '/' + name + '/:category' + '/:id';
-          break;
-        case 'update':
-          method = 'put';
-          path = '/' + name + '/:category' + '/:id';
-          break;
-        case 'create':
-          method = 'post';
-          path = '/' + name + '/:category';
-          break;
-        case 'search':
-          method = 'get';
-          path = '/' + name + '/:category' + '/search/:query?';
-          break;
-        default:
-          throw new Error('unrecognized route: ' + name + '.' + key);
-      }
-
-      path = prefix + path;
-      app[method](path, obj[key]);
-      verbose && console.log(' %s %s -> %s', method.toUpperCase(), path, key);
+module.exports = function(parent){
+  manifest = config.manifest
+  for (var name in manifest) {
+    var obj = manifest[name]
+      // this needs to be initialized from obj.keys
+      , schema = new Schema({ category: String
+                            , title: String
+                            , content: String })
+      , m = mongoose.model(name, schema) // register the collection
+    switch (obj.type) {
+      case 'text':
+        var controller = new TextController(m)
+      case 'file':
+        var controller = new FileController(m)
+      default:
+        controller = new TextController(m)
     }
+    var app = express()
+      , path = '/' + obj.name
+    console.log('\n %s: %s', obj.name, obj.type);
+    console.log('   - registered ' + name)
 
-    // mount the app
-    parent.use(app);
-  });
-};
+    // bind is here to get the myCollection instance from the *Controller
+    // cat_list
+    parent.get(path, controller.cat_list.bind(controller))
+    // list
+    parent.get(path + '/:category', controller.list.bind(controller))
+    // show
+    parent.get(path + '/:category/:id', controller.show.bind(controller))
+    // delete
+    parent.del(path + '/:category/:id', controller.destroy.bind(controller))
+    // update
+    parent.put(path + '/:category/:id', controller.update.bind(controller))
+    // create
+    parent.post(path + '/:category', controller.create.bind(controller))
+    // search
+    parent.get(path + '/:category/search/:query?', controller.search.bind(controller))
+  }
+  // mount the app
+  parent.use(app);
+}

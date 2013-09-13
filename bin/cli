@@ -58,7 +58,7 @@ function getHinkRequest() {
 
   hinkRequest.search = function(model, category, text, cb) {
     var url = base_url + '/' + model + '/' + category +
-              '/search/?q=' + text
+              '/search/' + text
     request.get(url, cb)
   }
   return hinkRequest

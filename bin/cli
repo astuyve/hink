@@ -1,10 +1,18 @@
 #!/usr/bin/env node
+
 var program = require('commander')
   , request = require('request')
+  , clc     = require('cli-color')
   , path    = require('path')
   // Fill these in if using deployed Hink
   , port     = 3000
   , base_url = 'http://localhost:'+ port
+  // color options
+  // https://github.com/medikoo/cli-color#colors
+  , titleColor   = clc.magenta
+  , contentColor = clc.white
+  , errorColor   = clc.red
+  , listColor    = clc.cyan
 
 program
     .option('-i, --interactive', 'Interactive CLI')
@@ -120,15 +128,15 @@ function main(argv) {
 
   function writeList (docs) {
     // receive json list and print to stdout properly
-    if (!docs) { process.stdout.write('no results\n'); process.exit() }
+    if (!docs) { process.stdout.write(errorColor('no results\n')); process.exit() }
 
     docs.forEach(function(doc) {
-      process.stdout.write(doc.title + '\n' + '\t- ' + doc.content + '\n\n')
-    })
+      process.stdout.write(titleColor(doc.title) + '\n' + '\t- ' +
+          contentColor(doc.content) + '\n\n') })
   }
 
   function cPrint(str) {
-    process.stdout.write(str + '\n')
+    process.stdout.write(listColor(str + '\n'))
   }
 }
 

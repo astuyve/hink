@@ -9,6 +9,14 @@ db.on('error', console.error.bind(console, 'Mongoose: Database connection error:
 
 var app = express()
 
+// allow X-Request from client. Without this you will get OPTION instead of GET/POST
+app.all('/*', function(req, res, next) {
+  res.header("Access-Control-Allow-Origin", "*")
+  res.header("Access-Control-Allow-Headers", "X-Requested-With")
+  res.header("Access-Control-Allow-Methods", "GET, POST","PUT")
+  next()
+})
+
 app.use(express.static(__dirname + '/public'));
 app.use(express.methodOverride());
 app.use(express.bodyParser({

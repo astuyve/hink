@@ -19,6 +19,7 @@ FileController.prototype.create = function(req, res, next) {
   var files = req.files
   var category = req.params.category
   console.log(files)
+  console.log("req -> " + req)
   //TODO name the upload file
   fs.readFile(req.files.img.path, function (err, data) {
   // ...

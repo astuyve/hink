@@ -1,0 +1,4 @@
+#!/bin/sh
+
+mongoimport -h 127.0.0.1 -d hink -c $1 --file $1.json;
+

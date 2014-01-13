@@ -1,0 +1,7 @@
+#!/bin/sh
+
+#this script assumes you're running it from the same location as mongo.
+
+mongoexport -h 127.0.0.1 -d hink -c notes --out notes.json;
+mongoexport -h 127.0.0.1 -d hink -c links --out links.json
+

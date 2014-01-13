@@ -5,8 +5,8 @@
 # This simply provides an outline of the data to be stored.
 # @searchable - searchable content keys. Since these can differ by the type of
 #   data youre storing. (ex. task data might have a date_due searchable key)
-# @type - This simply determines which controller generates the routes. 
-#    type: 
+# @type - This simply determines which controller generates the routes.
+#    type:
 #      text -> textController
 #      file -> fileController
 

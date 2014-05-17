@@ -2,9 +2,7 @@ FactoryGirl.define do
   factory :doc, class: "Doc" do
     title "A note"
     content "content"
-    tags do
-      [create(:tags, :one), create(:tags, :two)]
-    end
+    tags ['one', 'two']
 
     trait :nil_title do
       title nil
